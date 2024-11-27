@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.tasktimer"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.tasktimer"
@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.10.1")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
