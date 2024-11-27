@@ -1,22 +1,23 @@
 package com.example.tasktimer.viewmodel
 
-import androidx.lifecycle.ViewModel
-import com.example.tasktimer.model.Algorithm
 import com.example.tasktimer.repository.AlgorithmRepository
+import com.example.tasktimer.model.Algorithm
 
-class AlgorithmViewModel(private val repository: AlgorithmRepository) : ViewModel() {
+class AlgorithmViewModel(private val repository: AlgorithmRepository) {
 
     var algorithms: List<Algorithm> = emptyList()
-        private set
+        private set // Закрываем сеттер, чтобы изменять могли только внутри класса
 
-    // Загружаем данные при старте
+    // Загрузка алгоритмов из хранилища
     fun loadAlgorithms() {
         algorithms = repository.loadAlgorithms()
     }
 
-    // Добавляем новый алгоритм
+    // Добавление нового алгоритма
     fun addAlgorithm(algorithm: Algorithm) {
-        algorithms = algorithms + algorithm
-        repository.saveAlgorithms(algorithms)
+        val updatedAlgorithms = algorithms.toMutableList()
+        updatedAlgorithms.add(algorithm)
+        algorithms = updatedAlgorithms
+        repository.saveAlgorithms(algorithms) // Сохраняем изменения
     }
 }
