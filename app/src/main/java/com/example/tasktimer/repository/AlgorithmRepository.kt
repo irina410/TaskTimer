@@ -19,7 +19,9 @@ class AlgorithmRepository(context: Context) {
     // Загружаем список алгоритмов
     fun loadAlgorithms(): List<Algorithm> {
         val json = sharedPreferences.getString("algorithms", null) ?: return emptyList()
-        val type = object : TypeToken<List<Algorithm>>() {}.type
+        val type = object : TypeToken<List<Algorithm>>() {}.type //это создание анонимного класса,
+        // который наследует TypeToken<List<Algorithm>>.
+        // Этот анонимный класс необходим для получения корректной информации о типе List<Algorithm>
         return gson.fromJson(json, type)
     }
 }
