@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,7 +20,7 @@ class TaskCreateFragment(
     private val onTaskCreated: (Task) -> Unit,
     private val taskList: List<Task>, // Список существующих задач
     private val algorithms: List<Algorithm> // Список доступных алгоритмов
-) : Fragment() {
+) : DialogFragment() {
 
     private lateinit var taskNumberEditText: EditText
     private lateinit var algorithmRecyclerView: RecyclerView

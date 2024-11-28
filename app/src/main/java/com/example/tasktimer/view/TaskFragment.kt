@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Task
+import com.example.tasktimer.model.Algorithm
+import com.example.tasktimer.repository.AlgorithmRepository
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class TaskFragment : Fragment() {
@@ -31,7 +33,21 @@ class TaskFragment : Fragment() {
 
         // Обработчик кнопки FAB
         view.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
-            // Логика для добавления новой задачи
+            // Получаем доступные алгоритмы
+            val availableAlgorithms = AlgorithmRepository(requireContext()).loadAlgorithms()
+
+            val taskCreateFragment = TaskCreateFragment(
+                onTaskCreated = { newTask ->
+                    tasks.add(newTask) // Добавляем новую задачу в список
+                    taskAdapter.notifyDataSetChanged() // Обновляем адаптер
+                    Toast.makeText(requireContext(), "Задача создана!", Toast.LENGTH_SHORT).show()
+                },
+                taskList = tasks,
+                algorithms = availableAlgorithms
+            )
+
+            // Показываем TaskCreateFragment как диалог
+            taskCreateFragment.show(parentFragmentManager, "taskCreateDialog")
         }
 
         return view
