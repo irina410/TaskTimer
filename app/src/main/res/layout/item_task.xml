@@ -1,0 +1,47 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/taskNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="№"
+        android:textSize="18sp"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/taskName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Название алгоритма"
+        android:textSize="16sp"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/taskTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00:00"
+        android:textSize="14sp"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:contentDescription="go Task"
+        android:src="@android:drawable/ic_media_play"
+        app:backgroundTint="#FCF5FD"
+        app:elevation="0dp"/>
+
+
+</LinearLayout>

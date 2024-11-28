@@ -39,36 +39,28 @@ class AlgorithmFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = AlgorithmAdapter()
-        recyclerView.adapter = adapter
+        // Передаём список и обработчик в адаптер
+        adapter = AlgorithmAdapter(viewModel.algorithms) { selectedAlgorithm ->
+            // Действия при выборе алгоритма
+            AlgorithmEditDialogFragment(selectedAlgorithm) { updatedAlgorithm ->
+                updatedAlgorithm.recalculateTotalTime()
+                viewModel.addAlgorithm(updatedAlgorithm)
+                adapter.submitList(viewModel.algorithms)
+            }.show(parentFragmentManager, "editAlgorithm")
+        }
 
-//        adapter.setOnItemClickListener { algorithm ->
-//            AlgorithmEditDialogFragment(algorithm) { updatedAlgorithm ->
-//                updatedAlgorithm.recalculateTotalTime() // Пересчёт времени
-//                viewModel.updateAlgorithm(updatedAlgorithm)
-//                adapter.submitList(viewModel.algorithms)
-//            }.show(parentFragmentManager, "editAlgorithm")
-//        }
+        recyclerView.adapter = adapter
 
         // Передаём данные в адаптер
         adapter.submitList(viewModel.algorithms)
 
-//        // Обработка клика по элементу списка
-//        adapter.setOnItemClickListener { algorithm: Algorithm ->
-//            AlgorithmEditDialogFragment(algorithm) { updatedAlgorithm ->
-//                viewModel.addAlgorithm(updatedAlgorithm)
-//                adapter.submitList(viewModel.algorithms)
-//            }.show(parentFragmentManager, "editAlgorithm")
-//        }
-
         // Обработка клика по кнопке добавления
-        view.findViewById<View>(R.id.fab).setOnClickListener{
+        view.findViewById<View>(R.id.fab).setOnClickListener {
             AlgorithmEditDialogFragment(null) { newAlgorithm ->
-                newAlgorithm.recalculateTotalTime() // Пересчёт времени
+                newAlgorithm.recalculateTotalTime()
                 viewModel.addAlgorithm(newAlgorithm)
                 adapter.submitList(viewModel.algorithms)
             }.show(parentFragmentManager, "addAlgorithm")
         }
-
     }
 }
