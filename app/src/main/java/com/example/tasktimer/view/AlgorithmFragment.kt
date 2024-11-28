@@ -1,5 +1,6 @@
 package com.example.tasktimer.view
 
+import AlgorithmAdapter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,7 +28,7 @@ class AlgorithmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Создаём экземпляр ViewModel с репозиторием
+        // Создаём ViewModel с репозиторием
         val repository = AlgorithmRepository(requireContext())
         viewModel = AlgorithmViewModel(repository)
 
@@ -41,14 +42,33 @@ class AlgorithmFragment : Fragment() {
         adapter = AlgorithmAdapter()
         recyclerView.adapter = adapter
 
-        // Передаём данные из ViewModel в адаптер
+//        adapter.setOnItemClickListener { algorithm ->
+//            AlgorithmEditDialogFragment(algorithm) { updatedAlgorithm ->
+//                updatedAlgorithm.recalculateTotalTime() // Пересчёт времени
+//                viewModel.updateAlgorithm(updatedAlgorithm)
+//                adapter.submitList(viewModel.algorithms)
+//            }.show(parentFragmentManager, "editAlgorithm")
+//        }
+
+        // Передаём данные в адаптер
         adapter.submitList(viewModel.algorithms)
 
-        // Пример добавления нового алгоритма (можно использовать FAB или другой способ)
-        val newAlgorithm = Algorithm("Пример алгоритма", listOf())
-        viewModel.addAlgorithm(newAlgorithm)
+//        // Обработка клика по элементу списка
+//        adapter.setOnItemClickListener { algorithm: Algorithm ->
+//            AlgorithmEditDialogFragment(algorithm) { updatedAlgorithm ->
+//                viewModel.addAlgorithm(updatedAlgorithm)
+//                adapter.submitList(viewModel.algorithms)
+//            }.show(parentFragmentManager, "editAlgorithm")
+//        }
 
-        // Обновляем список в адаптере
-        adapter.submitList(viewModel.algorithms)
+        // Обработка клика по кнопке добавления
+        view.findViewById<View>(R.id.fab).setOnClickListener{
+            AlgorithmEditDialogFragment(null) { newAlgorithm ->
+                newAlgorithm.recalculateTotalTime() // Пересчёт времени
+                viewModel.addAlgorithm(newAlgorithm)
+                adapter.submitList(viewModel.algorithms)
+            }.show(parentFragmentManager, "addAlgorithm")
+        }
+
     }
 }
