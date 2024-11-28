@@ -1,4 +1,3 @@
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,19 +6,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Algorithm
 
-class AlgorithmAdapter : RecyclerView.Adapter<AlgorithmAdapter.AlgorithmViewHolder>() {
-
-    private var algorithms: List<Algorithm> = emptyList()
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun submitList(newAlgorithms: List<Algorithm>) {
-        algorithms = newAlgorithms
-        notifyDataSetChanged()
-    }
+class AlgorithmAdapter(
+    private var algorithms: List<Algorithm>, // Список алгоритмов 🐱
+    private val onAlgorithmSelected: (Algorithm) -> Unit // Обработчик выбора 🐾
+) : RecyclerView.Adapter<AlgorithmAdapter.AlgorithmViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlgorithmViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_algorithm, parent, false)
-        return AlgorithmViewHolder(view)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_algorithm, parent, false)
+        return AlgorithmViewHolder(view, onAlgorithmSelected)
     }
 
     override fun onBindViewHolder(holder: AlgorithmViewHolder, position: Int) {
@@ -29,13 +24,26 @@ class AlgorithmAdapter : RecyclerView.Adapter<AlgorithmAdapter.AlgorithmViewHold
 
     override fun getItemCount(): Int = algorithms.size
 
-    class AlgorithmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    fun submitList(newAlgorithms: List<Algorithm>) {
+        algorithms = newAlgorithms
+        notifyDataSetChanged()
+    }
+
+    class AlgorithmViewHolder(
+        itemView: View,
+        private val onAlgorithmSelected: (Algorithm) -> Unit
+    ) : RecyclerView.ViewHolder(itemView) {
+
         private val nameTextView: TextView = itemView.findViewById(R.id.algorithmName)
         private val totalTimeTextView: TextView = itemView.findViewById(R.id.algorithmTotalTime)
 
         fun bind(algorithm: Algorithm) {
             nameTextView.text = algorithm.name
             totalTimeTextView.text = formatSecondsToTime(algorithm.totalTime)
+
+            itemView.setOnClickListener {
+                onAlgorithmSelected(algorithm)
+            }
         }
 
         private fun formatSecondsToTime(seconds: Long): String {
