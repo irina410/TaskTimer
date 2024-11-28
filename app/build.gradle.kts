@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
 }
 
 android {
@@ -37,6 +38,10 @@ android {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("com.google.android.material:material:1.9.0")
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
