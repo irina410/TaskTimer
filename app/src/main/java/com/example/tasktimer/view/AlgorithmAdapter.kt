@@ -1,5 +1,3 @@
-package com.example.tasktimer.view
-
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
@@ -33,9 +31,18 @@ class AlgorithmAdapter : RecyclerView.Adapter<AlgorithmAdapter.AlgorithmViewHold
 
     class AlgorithmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.algorithmName)
+        private val totalTimeTextView: TextView = itemView.findViewById(R.id.algorithmTotalTime)
 
         fun bind(algorithm: Algorithm) {
             nameTextView.text = algorithm.name
+            totalTimeTextView.text = formatSecondsToTime(algorithm.totalTime)
+        }
+
+        private fun formatSecondsToTime(seconds: Long): String {
+            val hours = seconds / 3600
+            val minutes = (seconds % 3600) / 60
+            val secs = seconds % 60
+            return String.format("%02d:%02d:%02d", hours, minutes, secs)
         }
     }
 }
