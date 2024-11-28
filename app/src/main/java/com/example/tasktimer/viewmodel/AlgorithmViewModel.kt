@@ -20,4 +20,6 @@ class AlgorithmViewModel(private val repository: AlgorithmRepository) {
         algorithms = updatedAlgorithms
         repository.saveAlgorithms(algorithms) // Сохраняем изменения
     }
+
+
 }
