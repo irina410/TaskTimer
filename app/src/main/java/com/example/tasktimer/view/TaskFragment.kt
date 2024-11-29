@@ -1,6 +1,7 @@
 package com.example.tasktimer.view
 
 import TaskAdapter
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,8 @@ import com.example.tasktimer.model.Task
 import com.example.tasktimer.model.Algorithm
 import com.example.tasktimer.repository.AlgorithmRepository
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class TaskFragment : Fragment() {
     private val tasks = mutableListOf<Task>() // Список задач
@@ -24,6 +27,7 @@ class TaskFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_task, container, false)
+        loadTasks()
 
         // Инициализация RecyclerView
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
@@ -40,6 +44,7 @@ class TaskFragment : Fragment() {
                 onTaskCreated = { newTask ->
                     tasks.add(newTask) // Добавляем новую задачу в список
                     taskAdapter.notifyDataSetChanged() // Обновляем адаптер
+                    saveTasks()
                     Toast.makeText(requireContext(), "Задача создана!", Toast.LENGTH_SHORT).show()
                 },
                 taskList = tasks,
@@ -56,6 +61,29 @@ class TaskFragment : Fragment() {
     private fun deleteTask(task: Task) {
         tasks.remove(task)
         taskAdapter.notifyDataSetChanged()
+        saveTasks()
         Toast.makeText(requireContext(), "Задача удалена", Toast.LENGTH_SHORT).show()
     }
+
+    private fun saveTasks() {
+        val sharedPreferences = requireContext().getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        // Преобразуем список задач в JSON-строку
+        val jsonString = Gson().toJson(tasks)
+        editor.putString("tasks", jsonString)
+        editor.apply()
+    }
+
+    private fun loadTasks() {
+        val sharedPreferences = requireContext().getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE)
+        val jsonString = sharedPreferences.getString("tasks", null)
+
+        if (!jsonString.isNullOrEmpty()) {
+            val type = object : TypeToken<MutableList<Task>>() {}.type
+            tasks.clear()
+            tasks.addAll(Gson().fromJson(jsonString, type))
+        }
+    }
+
 }

@@ -58,7 +58,10 @@ class TaskCreateFragment(
                 taskNumberEditText.error = "Введите номер задачи"
             } else if (selectedAlgorithm == null) {
                 Toast.makeText(requireContext(), "Выберите алгоритм", Toast.LENGTH_SHORT).show()
-            } else {
+            } else if (!isTaskNumberUnique(taskNumber.toInt())) {
+                // Сообщение, что номер задачи уже существует
+                taskNumberEditText.error = "Этот номер уже существует"
+            }else {
                 onTaskCreated(Task(number = taskNumber.toInt(), algorithm = selectedAlgorithm!!))
                 dismiss()
             }
