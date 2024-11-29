@@ -48,25 +48,25 @@ class TaskCreateFragment(
         algorithmRecyclerView.adapter = algorithmAdapter
 
         // Обработка кнопки сохранения
+        view.findViewById<View>(R.id.closeButton).setOnClickListener {
+            dismiss()
+        }
+
         view.findViewById<View>(R.id.saveButton).setOnClickListener {
             val taskNumber = taskNumberEditText.text.toString().trim()
-
             if (TextUtils.isEmpty(taskNumber)) {
                 taskNumberEditText.error = "Введите номер задачи"
-            } else if (!isTaskNumberUnique(taskNumber.toInt())) {
-                taskNumberEditText.error = "Этот номер уже существует"
             } else if (selectedAlgorithm == null) {
                 Toast.makeText(requireContext(), "Выберите алгоритм", Toast.LENGTH_SHORT).show()
-            } else {
-                // Создание новой задачи
-                val newTask = Task(
-                    number = taskNumber.toInt(),
-                    algorithm = selectedAlgorithm!!
-                )
-                onTaskCreated(newTask) // Возвращаем задачу
-                parentFragmentManager.popBackStack() // Закрываем фрагмент
+            } else if (!isTaskNumberUnique(taskNumber.toInt())) {
+                // Сообщение, что номер задачи уже существует
+                taskNumberEditText.error = "Этот номер уже существует"
+            }else {
+                onTaskCreated(Task(number = taskNumber.toInt(), algorithm = selectedAlgorithm!!))
+                dismiss()
             }
         }
+
 
         return view
     }

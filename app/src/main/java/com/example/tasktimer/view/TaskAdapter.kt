@@ -34,7 +34,8 @@ class TaskAdapter(
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
             taskNumber.text = task.number.toString()
             algorithmName.text = task.algorithm.name
-            taskTime.text = task.algorithm.totalTime.toString()
+            taskTime.text = formatTime(task.algorithm.totalTime)
+
 
             // Обработчик долгого нажатия
             itemView.setOnLongClickListener {
@@ -54,6 +55,14 @@ class TaskAdapter(
                 .setPositiveButton("Удалить") { _, _ -> onTaskDelete(task) }
                 .setNegativeButton("Отмена", null)
                 .show()
+        }
+
+        private fun formatTime(seconds: Long): String {
+            val hours = seconds / 3600
+            val minutes = (seconds % 3600) / 60
+            val secs = seconds % 60
+            return String.format("%02d:%02d:%02d", hours, minutes, secs)
+
         }
     }
 }
