@@ -27,44 +27,48 @@
         android:hint="Введите номер задачи"
         android:inputType="number"
         android:minHeight="48dp" />
+
     <!-- Выбранный алгоритм -->
-    <TextView
-        android:id="@+id/selectedAlgorithm"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/selectedAlgorithmResV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/divider"
-        android:layout_marginTop="8dp"
+        android:layout_below="@id/taskNumber"
         android:background="#B100CC2C"
-        android:drawableEnd="@android:drawable/arrow_down_float"
-        android:padding="8dp"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:visibility="gone"
-        tools:text="Выбранный алгоритм" />
+        android:visibility="gone" />
 
+    <!-- Разделитель -->
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/taskNumber"
+        android:layout_below="@id/selectedAlgorithmResV"
         android:layout_marginTop="8dp"
-        android:background="#A9A9A9" />
+        android:background="@color/black" />
 
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/algorithmRecyclerView"
+    <!-- Обертываем список алгоритмов в ScrollView -->
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/taskNumber"
-        android:layout_marginTop="16dp" />
+        android:layout_height="300dp"
+        android:layout_below="@id/divider"
+        android:layout_marginTop="16dp">
+
+        <!-- RecyclerView для списка алгоритмов -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/algorithmRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
 
     <!-- Кнопка сохранения -->
     <Button
         android:id="@+id/saveButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/algorithmRecyclerView"
+        android:layout_below="@id/scrollView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:text="Сохранить" />
+
 </RelativeLayout>

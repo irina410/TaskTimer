@@ -26,25 +26,34 @@ class TaskCreateFragment(
 
     private lateinit var taskNumberEditText: EditText
     private lateinit var algorithmRecyclerView: RecyclerView
-    private lateinit var selectedAlgorithmTextView: TextView
+    private lateinit var selectedAlgorithmRecyclerView: RecyclerView
+
+    private lateinit var selectedAlgorithmAdapter: AlgorithmExpandableAdapter // Адаптер для выбранных алгоритмов
     private var selectedAlgorithm: Algorithm? = null // Выбранный алгоритм
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+
         val view = inflater.inflate(R.layout.fragment_task_create, container, false)
 
         taskNumberEditText = view.findViewById(R.id.taskNumber)
         algorithmRecyclerView = view.findViewById(R.id.algorithmRecyclerView)
-        selectedAlgorithmTextView = view.findViewById(R.id.selectedAlgorithm)
+        selectedAlgorithmRecyclerView = view.findViewById(R.id.selectedAlgorithmResV)
 
-        // Устанавливаем адаптер для RecyclerView
+        // Устанавливаем адаптер для RecyclerView (для отображения доступных алгоритмов)
         val algorithmAdapter = AlgorithmAdapter(algorithms) { algorithm ->
             onAlgorithmSelected(algorithm)
         }
         algorithmRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         algorithmRecyclerView.adapter = algorithmAdapter
+
+        // Настроим RecyclerView для выбранных алгоритмов
+        selectedAlgorithmRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        selectedAlgorithmAdapter = AlgorithmExpandableAdapter(emptyList()) { }
+        selectedAlgorithmRecyclerView.adapter = selectedAlgorithmAdapter
 
         // Кнопка закрытия
         view.findViewById<View>(R.id.closeButton).setOnClickListener {
@@ -72,14 +81,13 @@ class TaskCreateFragment(
     private fun onAlgorithmSelected(algorithm: Algorithm) {
         selectedAlgorithm = algorithm
 
-        // Переместить выбранный алгоритм наверх
-        selectedAlgorithmTextView.visibility = View.VISIBLE
-        selectedAlgorithmTextView.text = algorithm.name
-        val expandableAdapter = AlgorithmExpandableAdapter(listOf(algorithm)) { selectedAlgorithm ->
-            this.selectedAlgorithm = selectedAlgorithm
-        }
-        algorithmRecyclerView.adapter = expandableAdapter
+        // Переместить выбранный алгоритм в RecyclerView
+        selectedAlgorithmRecyclerView.visibility = View.VISIBLE
+        val updatedList = listOf(algorithm)
+        selectedAlgorithmAdapter.updateData(updatedList) // Обновляем адаптер с выбранным алгоритмом
+
     }
+
 
     private fun isTaskNumberUnique(taskNumber: Int): Boolean {
         return taskList.none { it.number == taskNumber }
