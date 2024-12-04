@@ -1,5 +1,4 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -29,21 +28,47 @@
         android:inputType="number"
         android:minHeight="48dp" />
 
-    <!-- RecyclerView для алгоритмов -->
+    <!-- Выбранный алгоритм -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/algorithmRecyclerView"
+        android:id="@+id/selectedAlgorithmResV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/taskNumber"
-        android:layout_marginTop="16dp" />
+        android:background="#B100CC2C"
+        android:visibility="gone" />
+
+    <!-- Разделитель -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/selectedAlgorithmResV"
+        android:layout_marginTop="8dp"
+        android:background="@color/black" />
+
+    <!-- Обертываем список алгоритмов в ScrollView -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@id/divider"
+        android:layout_marginTop="16dp">
+
+        <!-- RecyclerView для списка алгоритмов -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/algorithmRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
 
     <!-- Кнопка сохранения -->
     <Button
         android:id="@+id/saveButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/scrollView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:layout_below="@id/algorithmRecyclerView"
         android:text="Сохранить" />
+
 </RelativeLayout>

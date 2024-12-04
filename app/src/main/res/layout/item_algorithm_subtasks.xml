@@ -1,0 +1,37 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@color/green">
+
+    <!-- Основной текст -->
+<!--    <TextView-->
+<!--        android:id="@+id/algorithmName"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:clickable="true"-->
+<!--        android:drawableEnd="@android:drawable/arrow_down_float"-->
+<!--        android:minHeight="48dp"-->
+<!--        android:padding="8dp"-->
+<!--        android:text="Название алгоритма"-->
+<!--        android:textSize="16sp" />-->
+
+    <!-- Подзадачи (будут скрыты по умолчанию) -->
+    <LinearLayout
+        android:id="@+id/subtasksContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@color/green"
+        android:paddingStart="16dp">
+        <!-- Один элемент подзадачи -->
+        <TextView
+            android:id="@+id/subtask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Подзадача 1 - 10 мин" />
+    </LinearLayout>
+</LinearLayout>

@@ -7,8 +7,8 @@ import com.example.tasktimer.R
 import com.example.tasktimer.model.Algorithm
 
 class AlgorithmAdapter(
-    private var algorithms: List<Algorithm>, // Список алгоритмов 🐱
-    private val onAlgorithmSelected: (Algorithm) -> Unit // Обработчик выбора 🐾
+    private var algorithms: List<Algorithm>, // Список алгоритмов
+    private val onAlgorithmSelected: (Algorithm) -> Unit // Обработчик выбора
 ) : RecyclerView.Adapter<AlgorithmAdapter.AlgorithmViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlgorithmViewHolder {

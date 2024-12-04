@@ -86,7 +86,11 @@ class AlgorithmEditDialogFragment(
 
         return view
     }
-
+    override fun onPause() {
+        super.onPause()
+        val currentFocus = requireActivity().currentFocus
+        currentFocus?.clearFocus()
+    }
     /**
      * Обновляет список подзадач на экране.
      * Если список пуст, показывает текст "Список пуст". Если нет, показывает список.
