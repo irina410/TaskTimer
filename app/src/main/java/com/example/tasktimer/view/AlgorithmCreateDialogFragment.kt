@@ -15,7 +15,7 @@ import com.example.tasktimer.R
 import com.example.tasktimer.model.Algorithm
 import com.example.tasktimer.model.Subtask
 
-class AlgorithmEditDialogFragment(
+class AlgorithmCreateDialogFragment(
     private val algorithm: Algorithm?,
     private val onSave: (Algorithm) -> Unit
 ) : DialogFragment() {
@@ -32,7 +32,7 @@ class AlgorithmEditDialogFragment(
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_algorithm_edit_dialog, container, false)
+        val view = inflater.inflate(R.layout.fragment_algorithm_create_dialog, container, false)
 
         nameEditText = view.findViewById(R.id.editAlgorithmName)
         totalTimeTextView = view.findViewById(R.id.totalTime)

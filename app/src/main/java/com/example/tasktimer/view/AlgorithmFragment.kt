@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
-import com.example.tasktimer.model.Algorithm
 import com.example.tasktimer.repository.AlgorithmRepository
 import com.example.tasktimer.viewmodel.AlgorithmViewModel
 
@@ -42,7 +41,7 @@ class AlgorithmFragment : Fragment() {
         // Передаём список и обработчик в адаптер
         adapter = AlgorithmAdapter(viewModel.algorithms) { selectedAlgorithm ->
             // Действия при выборе алгоритма
-            AlgorithmEditDialogFragment(selectedAlgorithm) { updatedAlgorithm ->
+            AlgorithmCreateDialogFragment(selectedAlgorithm) { updatedAlgorithm ->
                 updatedAlgorithm.recalculateTotalTime()
                 viewModel.addAlgorithm(updatedAlgorithm)
                 adapter.submitList(viewModel.algorithms)
@@ -56,7 +55,7 @@ class AlgorithmFragment : Fragment() {
 
         // Обработка клика по кнопке добавления
         view.findViewById<View>(R.id.fab).setOnClickListener {
-            AlgorithmEditDialogFragment(null) { newAlgorithm ->
+            AlgorithmCreateDialogFragment(null) { newAlgorithm ->
                 newAlgorithm.recalculateTotalTime()
                 viewModel.addAlgorithm(newAlgorithm)
                 adapter.submitList(viewModel.algorithms)
