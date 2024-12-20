@@ -40,13 +40,20 @@ class AlgorithmFragment : Fragment() {
 
         // Передаём список и обработчик в адаптер
         adapter = AlgorithmAdapter(viewModel.algorithms) { selectedAlgorithm ->
-            // Действия при выборе алгоритма
-            AlgorithmCreateDialogFragment(selectedAlgorithm) { updatedAlgorithm ->
-                updatedAlgorithm.recalculateTotalTime()
-                viewModel.addAlgorithm(updatedAlgorithm)
-                adapter.submitList(viewModel.algorithms)
-            }.show(parentFragmentManager, "editAlgorithm")
+            AlgorithmEditDialogFragment(
+                algorithm = selectedAlgorithm,
+                onSave = { updatedAlgorithm ->
+                    updatedAlgorithm.recalculateTotalTime()
+                    viewModel.addAlgorithm(updatedAlgorithm)
+                    adapter.submitList(viewModel.algorithms)
+                },
+                onDelete = { deletedAlgorithm ->
+                    viewModel.removeAlgorithm(deletedAlgorithm)
+                    adapter.submitList(viewModel.algorithms)
+                }
+            ).show(parentFragmentManager, "editAlgorithm")
         }
+
 
         recyclerView.adapter = adapter
 

@@ -21,5 +21,12 @@ class AlgorithmViewModel(private val repository: AlgorithmRepository) {
         repository.saveAlgorithms(algorithms) // Сохраняем изменения
     }
 
-
+    // Удаление алгоритма
+    fun removeAlgorithm(algorithm: Algorithm) {
+        val updatedAlgorithms = algorithms.toMutableList()
+        updatedAlgorithms.remove(algorithm)
+        algorithms = updatedAlgorithms
+        repository.saveAlgorithms(algorithms) // Сохраняем изменения
+    }
 }
+
