@@ -58,7 +58,13 @@ class AlgorithmEditDialogFragment(
 
         // Настройка RecyclerView для отображения списка подзадач
         subtasksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        subtasksRecyclerView.adapter = SubtaskAdapter(subtasks, ::onSubtaskUpdated)
+        subtasksRecyclerView.adapter = SubtaskAdapter(
+            subtasks,
+            ::onSubtaskUpdated
+        ) { position ->
+            subtasks.removeAt(position)
+            updateSubtasks()
+        }
 
         updateSubtasks()
 

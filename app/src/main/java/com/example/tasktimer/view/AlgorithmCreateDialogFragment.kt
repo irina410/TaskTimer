@@ -27,6 +27,14 @@ class AlgorithmCreateDialogFragment(
 
     private val subtasks = mutableListOf<Subtask>()
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,8 +53,9 @@ class AlgorithmCreateDialogFragment(
         }
 
         subtasksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        subtasksRecyclerView.adapter = SubtaskAdapter(subtasks) {
-            updateTotalTime()
+        subtasksRecyclerView.adapter = SubtaskAdapter(subtasks, ::updateTotalTime) { position ->
+            subtasks.removeAt(position)
+            updateSubtasks()
         }
 
         updateSubtasks()
