@@ -8,9 +8,12 @@ import android.media.Ringtone
 import android.content.Intent
 import android.app.Notification
 import android.content.Context
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -127,23 +130,47 @@ class TaskAdapter(
             val ringtone = RingtoneManager.getRingtone(itemView.context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
             ringtone.play()
 
-            AlertDialog.Builder(itemView.context)
-                .setTitle("Подзадача завершена")
-                .setMessage("$subtaskName завершена за ${formatTime(duration)}")
-                .setPositiveButton("Готово") { _, _ ->
-                    ringtone.stop()
-                    currentSubtaskIndex++
-                    if (currentSubtaskIndex < subtasks.size) {
-                        startAlgorithmTimer(subtasks, totalTime) // Запуск следующей подзадачи
-                    } else {
-                        completeAlgorithm() // Все подзадачи завершены
-                    }
-                }
-                .setCancelable(false) // Запретить закрытие диалога без выбора
-                .show()
+            val windowContext = itemView.context.applicationContext
+            val layoutInflater = LayoutInflater.from(windowContext)
 
-            removeNotification() // Убираем уведомление
+            // Создаём кастомное окно
+            val dialogView = layoutInflater.inflate(R.layout.dialog_alarm, null)
+            dialogView.findViewById<TextView>(R.id.dialog_message).text = "$subtaskName завершена за ${formatTime(duration)}"
+
+            val alertDialog = AlertDialog.Builder(windowContext)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create()
+
+            alertDialog.window?.apply {
+                setType(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    else
+                        WindowManager.LayoutParams.TYPE_PHONE
+                )
+                addFlags(
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                )
+            }
+
+            alertDialog.show()
+
+            dialogView.findViewById<Button>(R.id.dialog_button).setOnClickListener {
+                ringtone.stop()
+                alertDialog.dismiss()
+                currentSubtaskIndex++
+                if (currentSubtaskIndex < subtasks.size) {
+                    startAlgorithmTimer(subtasks, totalTime)
+                } else {
+                    completeAlgorithm()
+                }
+            }
         }
+
 
         private fun showFullScreenNotification(subtaskName: String) {
             val intent = Intent(itemView.context, AlarmActivity::class.java).apply {
