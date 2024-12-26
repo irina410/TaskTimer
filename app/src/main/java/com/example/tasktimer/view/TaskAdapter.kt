@@ -1,25 +1,23 @@
-import android.app.Activity
 import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
-import android.content.pm.PackageManager
-import android.media.RingtoneManager
-import android.os.Build
 import android.os.CountDownTimer
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.NotificationChannel
+import android.media.RingtoneManager
+import android.media.Ringtone
+import android.content.Intent
+import android.app.Notification
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Subtask
 import com.example.tasktimer.model.Task
-import com.example.tasktimer.model.scheduleWork
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class TaskAdapter(
@@ -47,17 +45,6 @@ class TaskAdapter(
         return String.format("%02d:%02d:%02d", hours, minutes, secs)
     }
 
-    private fun showDeleteConfirmationDialog(context: Context, task: Task, onTaskDelete: (Task) -> Unit) {
-        AlertDialog.Builder(context)
-            .setTitle("Удалить задачу?")
-            .setMessage("Ты точно хочешь удалить эту задачу? Это действие необратимо!")
-            .setPositiveButton("Да") { _, _ ->
-                onTaskDelete(task)
-            }
-            .setNegativeButton("Нет", null)
-            .show()
-    }
-
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val taskNumber: TextView = itemView.findViewById(R.id.taskNumber)
         private val algorithmName: TextView = itemView.findViewById(R.id.taskName)
@@ -74,6 +61,7 @@ class TaskAdapter(
         init {
             createNotificationChannel()
         }
+
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
             taskNumber.text = task.number.toString()
@@ -96,6 +84,19 @@ class TaskAdapter(
             }
         }
 
+        private fun showDeleteConfirmationDialog(
+            context: Context,
+            task: Task,
+            onTaskDelete: (Task) -> Unit
+        ) {
+            AlertDialog.Builder(context)
+                .setTitle("Удалить задачу?")
+                .setMessage("Вы точно хотите удалить задачу №${task.number} (${task.algorithm.name})?")
+                .setPositiveButton("Удалить") { _, _ -> onTaskDelete(task) }
+                .setNegativeButton("Отмена", null)
+                .show()
+        }
+
         private fun startAlgorithmTimer(subtasks: List<Subtask>, totalTime: Long) {
             if (subtasks.isEmpty()) return
             updateButtonIcon(true)
@@ -109,12 +110,7 @@ class TaskAdapter(
                 }
 
                 override fun onFinish() {
-                    scheduleWork(
-                        itemView.context,
-                        1000L,
-                        "Подзадача завершена",
-                        "${subtask.description} завершена за ${formatTime(subtask.duration)}"
-                    )
+                    triggerAlarm(subtask.description, subtask.duration)
                     currentSubtaskIndex++
                     if (currentSubtaskIndex < subtasks.size) {
                         startAlgorithmTimer(subtasks, totalTime)
@@ -141,10 +137,10 @@ class TaskAdapter(
             )
         }
 
-        private fun showProgressNotification(subtaskName: String, timePerSubtask: Long) {
+        private fun showProgressNotification(subtaskName: String, duration: Long) {
             val notification = NotificationCompat.Builder(itemView.context, channelId)
-                .setContentTitle("Выполнение подзадачи")
-                .setContentText("$subtaskName: ${formatTime(timePerSubtask / 1000)}")
+                .setContentTitle("Выполняется подзадача")
+                .setContentText("$subtaskName: ${formatTime(duration)}")
                 .setSmallIcon(R.drawable.ic_timer)
                 .setOngoing(true)
                 .build()
@@ -161,6 +157,20 @@ class TaskAdapter(
             notificationManager.notify(1, notification)
         }
 
+        private fun triggerAlarm(subtaskName: String, duration: Long) {
+            val ringtone =
+                RingtoneManager.getRingtone(itemView.context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+            ringtone.play()
+
+            AlertDialog.Builder(itemView.context)
+                .setTitle("Подзадача завершена")
+                .setMessage("$subtaskName завершена за ${formatTime(duration)}")
+                .setPositiveButton("Готово") { _, _ -> ringtone.stop() }
+                .show()
+
+            removeNotification()
+        }
+
         private fun removeNotification() {
             notificationManager.cancel(1)
         }
@@ -171,7 +181,7 @@ class TaskAdapter(
         }
 
         private fun createNotificationChannel() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
                     channelId,
                     "Task Timer",
@@ -182,3 +192,4 @@ class TaskAdapter(
         }
     }
 }
+
