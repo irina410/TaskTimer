@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Subtask
 import com.example.tasktimer.model.Task
+import com.example.tasktimer.view.AlarmActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class TaskAdapter(
@@ -110,18 +111,62 @@ class TaskAdapter(
                 }
 
                 override fun onFinish() {
-                    triggerAlarm(subtask.description, subtask.duration)
-                    currentSubtaskIndex++
-                    if (currentSubtaskIndex < subtasks.size) {
-                        startAlgorithmTimer(subtasks, totalTime)
-                    } else {
-                        completeAlgorithm()
-                    }
+                    triggerAlarmAndWait(subtask.description, subtask.duration, subtasks, totalTime)
                 }
             }.start()
 
             isRunning = true
         }
+
+        private fun triggerAlarmAndWait(
+            subtaskName: String,
+            duration: Long,
+            subtasks: List<Subtask>,
+            totalTime: Long
+        ) {
+            val ringtone = RingtoneManager.getRingtone(itemView.context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+            ringtone.play()
+
+            AlertDialog.Builder(itemView.context)
+                .setTitle("Подзадача завершена")
+                .setMessage("$subtaskName завершена за ${formatTime(duration)}")
+                .setPositiveButton("Готово") { _, _ ->
+                    ringtone.stop()
+                    currentSubtaskIndex++
+                    if (currentSubtaskIndex < subtasks.size) {
+                        startAlgorithmTimer(subtasks, totalTime) // Запуск следующей подзадачи
+                    } else {
+                        completeAlgorithm() // Все подзадачи завершены
+                    }
+                }
+                .setCancelable(false) // Запретить закрытие диалога без выбора
+                .show()
+
+            removeNotification() // Убираем уведомление
+        }
+
+        private fun showFullScreenNotification(subtaskName: String) {
+            val intent = Intent(itemView.context, AlarmActivity::class.java).apply {
+                putExtra("SUBTASK_NAME", subtaskName)
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                itemView.context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notification = NotificationCompat.Builder(itemView.context, channelId)
+                .setContentTitle("Подзадача завершена")
+                .setContentText("$subtaskName завершена")
+                .setSmallIcon(R.drawable.ic_timer)
+                .setFullScreenIntent(pendingIntent, true) // Важная часть для отображения на экране блокировки
+                .setAutoCancel(true)
+                .build()
+
+            notificationManager.notify(2, notification)
+        }
+
 
         private fun stopAlgorithmTimer() {
             currentTimer?.cancel()
