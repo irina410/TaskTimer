@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Switch
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Subtask
@@ -33,6 +34,7 @@ class SubtaskAdapter(
         private val nameEditText: EditText = itemView.findViewById(R.id.subtaskName)
         private val durationEditText: EditText = itemView.findViewById(R.id.subtaskDuration)
         private val deleteButton: View = itemView.findViewById(R.id.deleteButton)
+        private val prioritySwitch: Switch = itemView.findViewById(R.id.switch1)
 
         private fun parseTimeToSeconds(time: String): Long {
             val parts = time.split(":").map { it.toIntOrNull() ?: 0 }
@@ -55,15 +57,28 @@ class SubtaskAdapter(
             nameEditText.setText(subtask.description)
             durationEditText.setText(if (subtask.duration == 0L) "" else formatSecondsToTime(subtask.duration))
 
+            // Слушатель изменения текста названия
             nameEditText.setOnFocusChangeListener { _, _ ->
                 subtask.description = nameEditText.text.toString()
                 onSubtaskUpdated()
             }
 
+            // Устанавливаем начальное состояние переключателя
+            prioritySwitch.isChecked = subtask.isHighPriority
+            updateSwitchText(subtask.isHighPriority)
+
+            // Слушатель изменения состояния переключателя
+            prioritySwitch.setOnCheckedChangeListener { _, isChecked ->
+                subtask.isHighPriority = isChecked
+                updateSwitchText(isChecked)
+                onSubtaskUpdated() // Сообщаем об изменении
+            }
+
             durationEditText.setOnFocusChangeListener { _, hasFocus ->
                 if (!hasFocus) {
                     val durationText = durationEditText.text.toString()
-                    subtask.duration = if (durationText.isNotBlank()) parseTimeToSeconds(durationText) else 0L
+                    subtask.duration =
+                        if (durationText.isNotBlank()) parseTimeToSeconds(durationText) else 0L
                     durationEditText.setText(formatSecondsToTime(subtask.duration))
                     onSubtaskUpdated()
                 }
@@ -74,6 +89,15 @@ class SubtaskAdapter(
                 if (position != RecyclerView.NO_POSITION) {
                     onSubtaskDeleted(position)
                 }
+            }
+        }
+
+        // Обновление текста переключателя
+        private fun updateSwitchText(isHighPriority: Boolean) {
+            prioritySwitch.text = if (isHighPriority) {
+                "Высокая приоритетность"
+            } else {
+                "Обычная приоритетность"
             }
         }
     }

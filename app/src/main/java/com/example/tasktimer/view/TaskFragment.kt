@@ -43,6 +43,7 @@ class TaskFragment : Fragment() {
             val taskCreateFragment = TaskCreateFragment(
                 onTaskCreated = { newTask ->
                     tasks.add(newTask) // Добавляем новую задачу в список
+                    tasks.sortBy { it.number } // Сортировка по номеру задачи
                     taskAdapter.notifyDataSetChanged() // Обновляем адаптер
                     saveTasks()
                     Toast.makeText(requireContext(), "Задача создана!", Toast.LENGTH_SHORT).show()
@@ -83,6 +84,8 @@ class TaskFragment : Fragment() {
             val type = object : TypeToken<MutableList<Task>>() {}.type
             tasks.clear()
             tasks.addAll(Gson().fromJson(jsonString, type))
+            tasks.sortBy { it.number } // Сортировка по номеру задачи
+
         }
     }
 

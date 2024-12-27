@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
@@ -27,6 +28,7 @@ class TaskCreateFragment(
     private lateinit var taskNumberEditText: EditText
     private lateinit var algorithmRecyclerView: RecyclerView
     private lateinit var selectedAlgorithmRecyclerView: RecyclerView
+    private lateinit var switchHighPriority: Switch // Ссылка на Switch
 
     private lateinit var selectedAlgorithmAdapter: AlgorithmExpandableAdapter // Адаптер для выбранных алгоритмов
     private var selectedAlgorithm: Algorithm? = null // Выбранный алгоритм
@@ -35,7 +37,6 @@ class TaskCreateFragment(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
 
         val view = inflater.inflate(R.layout.fragment_task_create, container, false)
 
@@ -59,7 +60,6 @@ class TaskCreateFragment(
         view.findViewById<View>(R.id.closeButton).setOnClickListener {
             dismiss()
         }
-
         // Кнопка сохранения
         view.findViewById<View>(R.id.saveButton).setOnClickListener {
             val taskNumber = taskNumberEditText.text.toString().trim()
@@ -70,6 +70,7 @@ class TaskCreateFragment(
             } else if (!isTaskNumberUnique(taskNumber.toInt())) {
                 taskNumberEditText.error = "Этот номер уже существует"
             } else {
+
                 onTaskCreated(Task(number = taskNumber.toInt(), algorithm = selectedAlgorithm!!))
                 dismiss()
             }
@@ -85,9 +86,7 @@ class TaskCreateFragment(
         selectedAlgorithmRecyclerView.visibility = View.VISIBLE
         val updatedList = listOf(algorithm)
         selectedAlgorithmAdapter.updateData(updatedList) // Обновляем адаптер с выбранным алгоритмом
-
     }
-
 
     private fun isTaskNumberUnique(taskNumber: Int): Boolean {
         return taskList.none { it.number == taskNumber }

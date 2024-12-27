@@ -8,6 +8,8 @@ import android.media.Ringtone
 import android.content.Intent
 import android.app.Notification
 import android.content.Context
+import android.graphics.Paint
+import android.net.Uri
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +40,7 @@ class TaskAdapter(
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
         holder.bind(task, onTaskDelete)
+
     }
 
     override fun getItemCount(): Int = tasks.size
@@ -71,6 +74,7 @@ class TaskAdapter(
             taskNumber.text = task.number.toString()
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
+
 
             updateButtonIcon(isRunning)
 
@@ -127,7 +131,16 @@ class TaskAdapter(
             subtasks: List<Subtask>,
             totalTime: Long
         ) {
-            val ringtone = RingtoneManager.getRingtone(itemView.context, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+            val subtask = subtasks[currentSubtaskIndex]
+
+            val ringtoneUri = if (subtask.isHighPriority) {
+                Uri.parse("android.resource://${itemView.context.packageName}/raw/electronic_alarm_signal") // Уникальный звук для high-priority
+            } else {
+               Uri.parse("android.resource://${itemView.context.packageName}/raw/basic_alarm_ringtone")
+                // Стандартный звук
+            }
+
+            val ringtone = RingtoneManager.getRingtone(itemView.context, ringtoneUri)
             ringtone.play()
 
             val windowContext = itemView.context.applicationContext
@@ -135,7 +148,13 @@ class TaskAdapter(
 
             // Создаём кастомное окно
             val dialogView = layoutInflater.inflate(R.layout.dialog_alarm, null)
-            dialogView.findViewById<TextView>(R.id.dialog_message).text = "$subtaskName завершена за ${formatTime(duration)}"
+            val currentSubtaskText = "$subtaskName завершена за ${formatTime(duration)}" + if (subtask.isHighPriority) "\n(Высокий приоритет)" else ""
+            val nextSubtask = if (currentSubtaskIndex + 1 < subtasks.size) {
+                "Следующая подзадача: ${subtasks[currentSubtaskIndex + 1].description}"
+            } else {
+                "Это была последняя подзадача!"
+            }
+            dialogView.findViewById<TextView>(R.id.dialog_message).text = "$currentSubtaskText\n\n$nextSubtask"
 
             val alertDialog = AlertDialog.Builder(windowContext)
                 .setView(dialogView)
@@ -170,6 +189,7 @@ class TaskAdapter(
                 }
             }
         }
+
 
 
         private fun showFullScreenNotification(subtaskName: String) {

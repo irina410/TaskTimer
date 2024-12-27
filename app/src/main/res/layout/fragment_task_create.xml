@@ -1,5 +1,7 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -12,8 +14,9 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="8dp"
         android:clickable="true"
-        android:contentDescription="Close"
         android:focusable="true"
+        android:contentDescription="Закрыть"
+        app:tint="@color/black"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         tools:ignore="TouchTargetSizeCheck" />
 
@@ -26,14 +29,17 @@
         android:layout_marginTop="16dp"
         android:hint="Введите номер задачи"
         android:inputType="number"
-        android:minHeight="48dp" />
+        android:minHeight="48dp"
+        android:padding="8dp"
+        android:textSize="16sp" />
 
-    <!-- Выбранный алгоритм -->
+    <!-- RecyclerView для выбранного алгоритма -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/selectedAlgorithmResV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/taskNumber"
+        android:layout_marginTop="8dp"
         android:background="#B100CC2C"
         android:visibility="gone" />
 
@@ -43,18 +49,17 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_below="@id/selectedAlgorithmResV"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:background="@color/black" />
 
-    <!-- Обертываем список алгоритмов в ScrollView -->
+    <!-- Обёртка для списка алгоритмов -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_below="@id/divider"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="8dp">
 
-        <!-- RecyclerView для списка алгоритмов -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/algorithmRecyclerView"
             android:layout_width="match_parent"
@@ -69,6 +74,9 @@
         android:layout_below="@id/scrollView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="Сохранить" />
+        android:text="Сохранить"
+        android:textColor="@android:color/white"
+        android:paddingHorizontal="32dp"
+        android:paddingVertical="12dp" />
 
 </RelativeLayout>
