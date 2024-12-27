@@ -8,6 +8,7 @@ import android.media.Ringtone
 import android.content.Intent
 import android.app.Notification
 import android.content.Context
+import android.graphics.Paint
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,7 @@ class TaskAdapter(
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
         holder.bind(task, onTaskDelete)
+
     }
 
     override fun getItemCount(): Int = tasks.size
@@ -72,6 +74,12 @@ class TaskAdapter(
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
 
+            // Добавляем подчёркивание, если задача высокоприоритетная
+            if (task.isHighPriority) {
+                algorithmName.paintFlags = algorithmName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            } else {
+                algorithmName.paintFlags = algorithmName.paintFlags and Paint.UNDERLINE_TEXT_FLAG.inv()
+            }
             updateButtonIcon(isRunning)
 
             startStopButton.setOnClickListener {
