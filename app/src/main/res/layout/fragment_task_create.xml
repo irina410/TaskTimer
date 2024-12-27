@@ -37,12 +37,22 @@
         android:background="#B100CC2C"
         android:visibility="gone" />
 
+    <!-- Switch -->
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/selectedAlgorithmResV"
+        android:layout_marginTop="8dp"
+        android:minHeight="48dp"
+        android:text="Switch" />
+
     <!-- Разделитель -->
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/selectedAlgorithmResV"
+        android:layout_below="@id/switch1"
         android:layout_marginTop="8dp"
         android:background="@color/black" />
 
