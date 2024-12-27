@@ -9,6 +9,7 @@ import android.content.Intent
 import android.app.Notification
 import android.content.Context
 import android.graphics.Paint
+import android.net.Uri
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -74,12 +75,7 @@ class TaskAdapter(
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
 
-            // Добавляем подчёркивание, если задача высокоприоритетная
-            if (task.isHighPriority) {
-                algorithmName.paintFlags = algorithmName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-            } else {
-                algorithmName.paintFlags = algorithmName.paintFlags and Paint.UNDERLINE_TEXT_FLAG.inv()
-            }
+
             updateButtonIcon(isRunning)
 
             startStopButton.setOnClickListener {
@@ -135,10 +131,13 @@ class TaskAdapter(
             subtasks: List<Subtask>,
             totalTime: Long
         ) {
-            val ringtoneUri = if (tasks[adapterPosition].isHighPriority) {
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL) // Уникальный звук для high-priority
+            val subtask = subtasks[currentSubtaskIndex]
+
+            val ringtoneUri = if (subtask.isHighPriority) {
+                Uri.parse("android.resource://${itemView.context.packageName}/raw/electronic_alarm_signal") // Уникальный звук для high-priority
             } else {
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM) // Стандартный звук
+               Uri.parse("android.resource://${itemView.context.packageName}/raw/basic_alarm_ringtone")
+                // Стандартный звук
             }
 
             val ringtone = RingtoneManager.getRingtone(itemView.context, ringtoneUri)
@@ -149,7 +148,7 @@ class TaskAdapter(
 
             // Создаём кастомное окно
             val dialogView = layoutInflater.inflate(R.layout.dialog_alarm, null)
-            val currentSubtaskText = "$subtaskName завершена за ${formatTime(duration)}"
+            val currentSubtaskText = "$subtaskName завершена за ${formatTime(duration)}" + if (subtask.isHighPriority) "\n(Высокий приоритет)" else ""
             val nextSubtask = if (currentSubtaskIndex + 1 < subtasks.size) {
                 "Следующая подзадача: ${subtasks[currentSubtaskIndex + 1].description}"
             } else {

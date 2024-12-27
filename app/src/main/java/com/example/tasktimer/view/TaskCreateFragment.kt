@@ -43,7 +43,6 @@ class TaskCreateFragment(
         taskNumberEditText = view.findViewById(R.id.taskNumber)
         algorithmRecyclerView = view.findViewById(R.id.algorithmRecyclerView)
         selectedAlgorithmRecyclerView = view.findViewById(R.id.selectedAlgorithmResV)
-        switchHighPriority = view.findViewById(R.id.switch1) // Инициализация Switch
 
         // Устанавливаем адаптер для RecyclerView (для отображения доступных алгоритмов)
         val algorithmAdapter = AlgorithmAdapter(algorithms) { algorithm ->
@@ -61,14 +60,6 @@ class TaskCreateFragment(
         view.findViewById<View>(R.id.closeButton).setOnClickListener {
             dismiss()
         }
-// Слушатель для Switch
-        switchHighPriority.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                switchHighPriority.text = "Высокая приоритетность"
-            } else {
-                switchHighPriority.text = "Обычная приоритетность"
-            }
-        }
         // Кнопка сохранения
         view.findViewById<View>(R.id.saveButton).setOnClickListener {
             val taskNumber = taskNumberEditText.text.toString().trim()
@@ -79,8 +70,8 @@ class TaskCreateFragment(
             } else if (!isTaskNumberUnique(taskNumber.toInt())) {
                 taskNumberEditText.error = "Этот номер уже существует"
             } else {
-                val isHighPriority = switchHighPriority.isChecked // Получаем состояние Switch
-                onTaskCreated(Task(number = taskNumber.toInt(), algorithm = selectedAlgorithm!!, isHighPriority = isHighPriority))
+
+                onTaskCreated(Task(number = taskNumber.toInt(), algorithm = selectedAlgorithm!!))
                 dismiss()
             }
         }

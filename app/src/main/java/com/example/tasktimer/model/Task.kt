@@ -5,7 +5,7 @@ import com.example.tasktimer.model.Algorithm
 data class Task(
     val number: Int,  // Уникальный номер задачи
     val algorithm: Algorithm,  // Алгоритм, с которым связана задача
-    val isHighPriority: Boolean = false,  // Флаг высокой приоритетности задачи
+
     var isRunning: Boolean = false  // Статус выполнения задачи (запущена или нет)
 ) {
     // Метод для получения общего времени задачи (всего времени подзадач алгоритма)
