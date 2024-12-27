@@ -61,7 +61,14 @@ class TaskCreateFragment(
         view.findViewById<View>(R.id.closeButton).setOnClickListener {
             dismiss()
         }
-
+// Слушатель для Switch
+        switchHighPriority.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                switchHighPriority.text = "Высокая приоритетность"
+            } else {
+                switchHighPriority.text = "Обычная приоритетность"
+            }
+        }
         // Кнопка сохранения
         view.findViewById<View>(R.id.saveButton).setOnClickListener {
             val taskNumber = taskNumberEditText.text.toString().trim()
