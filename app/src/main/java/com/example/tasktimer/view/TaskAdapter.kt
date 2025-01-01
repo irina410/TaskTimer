@@ -16,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -57,13 +58,15 @@ class TaskAdapter(
         private val algorithmName: TextView = itemView.findViewById(R.id.taskName)
         private val taskTime: TextView = itemView.findViewById(R.id.taskTime)
         private val startStopButton: FloatingActionButton = itemView.findViewById(R.id.startStopButton)
-
         private var currentTimer: CountDownTimer? = null
         private var isRunning = false
         private var currentSubtaskIndex = 0
         private val notificationManager =
             itemView.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         private val channelId = "TASK_TIMER_CHANNEL"
+        private val subtaskLayout: LinearLayout = itemView.findViewById(R.id.subtaskLayout)
+        private val subtaskCountdown: TextView = itemView.findViewById(R.id.subtaskCountdown)
+        private val currentSubtask: TextView = itemView.findViewById(R.id.currentSubtask)
 
         init {
             createNotificationChannel()
@@ -107,14 +110,14 @@ class TaskAdapter(
 
         private fun startAlgorithmTimer(subtasks: List<Subtask>, totalTime: Long) {
             if (subtasks.isEmpty()) return
-            updateButtonIcon(true)
 
             val subtask = subtasks[currentSubtaskIndex]
-            showProgressNotification(subtask.description, subtask.duration)
+            subtaskLayout.visibility = View.VISIBLE
+            currentSubtask.text = "Текущая подзадача: ${subtask.description}"
 
             currentTimer = object : CountDownTimer(subtask.duration * 1000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
-                    updateNotification(subtask.description, millisUntilFinished)
+                    subtaskCountdown.text = "Оставшееся время: ${formatTime(millisUntilFinished / 1000)}"
                 }
 
                 override fun onFinish() {
@@ -123,7 +126,9 @@ class TaskAdapter(
             }.start()
 
             isRunning = true
+            updateButtonIcon(true)
         }
+
 
         private fun triggerAlarmAndWait(
             subtaskName: String,
@@ -217,11 +222,12 @@ class TaskAdapter(
 
         private fun stopAlgorithmTimer() {
             currentTimer?.cancel()
-            removeNotification()
+            subtaskLayout.visibility = View.GONE
             updateButtonIcon(false)
             isRunning = false
             currentSubtaskIndex = 0
         }
+
 
         private fun updateButtonIcon(isRunning: Boolean) {
             startStopButton.setImageResource(
@@ -269,8 +275,10 @@ class TaskAdapter(
 
         private fun completeAlgorithm() {
             Toast.makeText(itemView.context, "Все подзадачи завершены!", Toast.LENGTH_SHORT).show()
+            subtaskLayout.visibility = View.GONE
             stopAlgorithmTimer()
         }
+
 
         private fun createNotificationChannel() {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
