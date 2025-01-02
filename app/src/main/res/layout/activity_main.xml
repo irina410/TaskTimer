@@ -11,16 +11,26 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
-        <!-- Toolbar с пользовательским названием -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#B39DDB"
-            android:paddingTop="8dp"
             android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
-            app:title="Моё название" />
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light">
+
+            <!-- Центрируем текст вручную -->
+            <TextView
+                android:id="@+id/toolbar_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="brusket"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
+        </androidx.appcompat.widget.Toolbar>
+
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"

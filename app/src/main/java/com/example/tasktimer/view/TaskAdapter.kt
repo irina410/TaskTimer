@@ -9,8 +9,12 @@ import android.content.Intent
 import android.app.Notification
 import android.content.Context
 import android.graphics.Paint
+import android.media.AudioAttributes
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -141,19 +145,53 @@ class TaskAdapter(
             val ringtoneUri = if (subtask.isHighPriority) {
                 Uri.parse("android.resource://${itemView.context.packageName}/raw/electronic_alarm_signal") // Уникальный звук для high-priority
             } else {
-               Uri.parse("android.resource://${itemView.context.packageName}/raw/basic_alarm_ringtone")
-                // Стандартный звук
+                Uri.parse("android.resource://${itemView.context.packageName}/raw/basic_alarm_ringtone") // Стандартный звук
             }
 
+            val audioManager = itemView.context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            val desiredVolume = (maxVolume * 0.7).toInt() // Устанавливаем 80% от максимальной громкости
+            audioManager.setStreamVolume(
+                AudioManager.STREAM_ALARM,
+                desiredVolume,
+                0
+            )
+
+            val originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
             val ringtone = RingtoneManager.getRingtone(itemView.context, ringtoneUri)
+            ringtone.audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+
             ringtone.play()
+
+            // Включаем вибрацию
+            val vibrator = itemView.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
+            val vibrationEffect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                VibrationEffect.createWaveform(longArrayOf(0, 500, 500), 0) // Вибрация: 500 мс, пауза 500 мс, бесконечно
+            } else {
+                longArrayOf(0, 500, 500)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val vibrationEffect = VibrationEffect.createWaveform(
+                    longArrayOf(0, 500, 500), // Задержка, вибрация, пауза
+                    0 // Повтор (0 - бесконечно, -1 - не повторять)
+                )
+                vibrator.vibrate(vibrationEffect)
+            } else {
+                // Для старых версий Android используем миллисекунды
+                vibrator.vibrate(longArrayOf(0, 500, 500), 0)
+            }
 
             val windowContext = itemView.context.applicationContext
             val layoutInflater = LayoutInflater.from(windowContext)
 
             // Создаём кастомное окно
             val dialogView = layoutInflater.inflate(R.layout.dialog_alarm, null)
-            val currentSubtaskText = "$subtaskName завершена за ${formatTime(duration)}" + if (subtask.isHighPriority) "\n(Высокий приоритет)" else ""
+            val currentSubtaskText = "$subtaskName завершена за ${formatTime(duration)}" +
+                    if (subtask.isHighPriority) "\n(Высокий приоритет)" else ""
             val nextSubtask = if (currentSubtaskIndex + 1 < subtasks.size) {
                 "Следующая подзадача: ${subtasks[currentSubtaskIndex + 1].description}"
             } else {
@@ -185,7 +223,12 @@ class TaskAdapter(
 
             dialogView.findViewById<Button>(R.id.dialog_button).setOnClickListener {
                 ringtone.stop()
+                vibrator.cancel() // Останавливаем вибрацию
                 alertDialog.dismiss()
+
+                // Восстанавливаем громкость
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, originalVolume, 0)
+
                 currentSubtaskIndex++
                 if (currentSubtaskIndex < subtasks.size) {
                     startAlgorithmTimer(subtasks, totalTime)
@@ -194,6 +237,7 @@ class TaskAdapter(
                 }
             }
         }
+
 
 
 
