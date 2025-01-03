@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Subtask
 import com.example.tasktimer.model.Task
+import com.example.tasktimer.model.TaskTimerService
 import com.example.tasktimer.view.AlarmActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -86,10 +87,18 @@ class TaskAdapter(
             updateButtonIcon(isRunning)
 
             startStopButton.setOnClickListener {
+                val serviceIntent = Intent(itemView.context, TaskTimerService::class.java)
+                serviceIntent.putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
+                serviceIntent.putExtra(TaskTimerService.EXTRA_SUBTASK_NAME, task.algorithm.subtasks[0].description) // Assuming the first subtask is started initially
+                serviceIntent.putParcelableArrayListExtra("subtasks", ArrayList(task.algorithm.subtasks))
+                serviceIntent.putExtra("totalTime", task.algorithm.totalTime)
+
                 if (isRunning) {
-                    stopAlgorithmTimer()
+                    itemView.context.stopService(serviceIntent) // Stop the service
+                    stopAlgorithmTimer() // Update UI
                 } else {
-                    startAlgorithmTimer(task.algorithm.subtasks, task.algorithm.totalTime)
+                    itemView.context.startService(serviceIntent) // Start the service
+                    startAlgorithmTimer(task.algorithm.subtasks, task.algorithm.totalTime) // Update UI
                 }
             }
 
@@ -113,22 +122,10 @@ class TaskAdapter(
         }
 
         private fun startAlgorithmTimer(subtasks: List<Subtask>, totalTime: Long) {
-            if (subtasks.isEmpty()) return
-
-            val subtask = subtasks[currentSubtaskIndex]
+            // Update UI elements to reflect the running state
             subtaskLayout.visibility = View.VISIBLE
-            currentSubtask.text = "Текущая подзадача: ${subtask.description}"
-
-            currentTimer = object : CountDownTimer(subtask.duration * 1000, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    subtaskCountdown.text = "Оставшееся время: ${formatTime(millisUntilFinished / 1000)}"
-                }
-
-                override fun onFinish() {
-                    triggerAlarmAndWait(subtask.description, subtask.duration, subtasks, totalTime)
-                }
-            }.start()
-
+            currentSubtask.text = "Текущая подзадача: ${subtasks[currentSubtaskIndex].description}"
+            subtaskCountdown.text = "Оставшееся время: ${formatTime(subtasks[currentSubtaskIndex].duration)}" // Initial time
             isRunning = true
             updateButtonIcon(true)
         }
@@ -265,11 +262,11 @@ class TaskAdapter(
 
 
         private fun stopAlgorithmTimer() {
-            currentTimer?.cancel()
+            // Update UI elements to reflect the stopped state
             subtaskLayout.visibility = View.GONE
-            updateButtonIcon(false)
             isRunning = false
-            currentSubtaskIndex = 0
+            updateButtonIcon(false)
+            currentSubtaskIndex = 0 // Reset subtask index
         }
 
 
