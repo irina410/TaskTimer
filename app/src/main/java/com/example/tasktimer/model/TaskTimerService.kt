@@ -26,198 +26,144 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.tasktimer.MainActivity
 import com.example.tasktimer.R
 
 class TaskTimerService : Service() {
 
     companion object {
+        // Константы для уведомлений и данных
         const val CHANNEL_ID = "task_timer_channel"
         const val NOTIFICATION_ID = 1
         const val EXTRA_TASK_NAME = "task_name"
         const val EXTRA_SUBTASK_NAME = "subtask_name"
+        const val BROADCAST_UPDATE = "task_timer_update"
+        const val EXTRA_CURRENT_SUBTASK = "current_subtask"
+        const val EXTRA_REMAINING_TIME = "remaining_time"
     }
 
-    private val handler = Handler(Looper.getMainLooper())
+    // Переменные для состояния таймера
+    private var remainingTime: Long = 0
     private var startTime = 0L
     private var taskName: String? = null
     private var subtaskName: String? = null
-    private val updateInterval: Long = 1000 // Обновление каждую секунду
-
-    private var currentTimer: CountDownTimer? = null
-    private var isRunning = false
     private var currentSubtaskIndex = 0
     private var subtasks: List<Subtask> = emptyList()
     private var totalTime: Long = 0
+    private var isRunning = false
+    private var currentTimer: CountDownTimer? = null
+
+    // Объекты для работы с уведомлениями и обновлениями
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateInterval: Long = 1000 // Интервал обновления уведомлений в миллисекундах
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
+        createNotificationChannel() // Создаем канал уведомлений
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Извлекаем данные из intent
         taskName = intent?.getStringExtra(EXTRA_TASK_NAME)
         subtaskName = intent?.getStringExtra(EXTRA_SUBTASK_NAME)
+        subtasks = intent?.getParcelableArrayListExtra("subtasks") ?: emptyList()
+        totalTime = intent?.getLongExtra("totalTime", 0) ?: 0
         startTime = System.currentTimeMillis()
 
+        // Загружаем состояние задачи
+        currentSubtaskIndex = loadCurrentSubtaskIndex()
+        remainingTime = loadRemainingTime()
+
+        // Запускаем уведомление и таймер
         startForeground(NOTIFICATION_ID, createNotification("00:00:00"))
         updateNotification()
 
-        // Получаем подзадачи и общее время из intent
-        subtasks = intent?.getParcelableArrayListExtra("subtasks") ?: emptyList()
-        totalTime = intent?.getLongExtra("totalTime", 0) ?: 0
-
-        // Стартуем таймер, если есть подзадачи
         if (subtasks.isNotEmpty()) {
-            startAlgorithmTimer(subtasks, totalTime)
+            startSubtaskTimer()
         }
 
         return START_NOT_STICKY
     }
 
-    private fun startAlgorithmTimer(subtasks: List<Subtask>, totalTime: Long) {
-        if (subtasks.isEmpty()) return
+    /**
+     * Метод для запуска таймера для текущей подзадачи.
+     * Если подзадачи завершены, сервис останавливается.
+     */
+    private fun startSubtaskTimer() {
+        if (currentSubtaskIndex >= subtasks.size) {
+            stopSelf() // Все подзадачи завершены
+            return
+        }
 
         val subtask = subtasks[currentSubtaskIndex]
+        val duration = if (remainingTime > 0) remainingTime else subtask.duration * 1000
 
-        currentTimer = object : CountDownTimer(subtask.duration * 1000, 1000) {
+        // Создаем и запускаем CountDownTimer
+        currentTimer = object : CountDownTimer(duration, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                // Обновляем уведомление с оставшимся временем
-                val time = formatElapsedTime(millisUntilFinished / 1000)
-                val notification = createNotification(time)
-                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                manager.notify(NOTIFICATION_ID, notification)
+                remainingTime = millisUntilFinished
+                sendUpdateBroadcast(subtask.description, millisUntilFinished / 1000)
             }
 
             override fun onFinish() {
-                triggerAlarmAndWait(subtask.description, subtask.duration, subtasks, totalTime)
+                currentSubtaskIndex++
+                saveCurrentSubtaskIndex(currentSubtaskIndex)
+                saveRemainingTime(0)
+                startSubtaskTimer()
             }
         }.start()
 
-        isRunning = true
+        // Сохраняем оставшееся время
+        saveRemainingTime(duration)
     }
 
-    private fun triggerAlarmAndWait(
-        subtaskName: String,
-        duration: Long,
-        subtasks: List<Subtask>,
-        totalTime: Long
-    ) {
-        val subtask = subtasks[currentSubtaskIndex]
-        val ringtoneUri = if (subtask.isHighPriority) {
-            Uri.parse("android.resource://${packageName}/raw/electronic_alarm_signal")
-        } else {
-            Uri.parse("android.resource://${packageName}/raw/basic_alarm_ringtone")
+    /**
+     * Отправляет локальное обновление через BroadcastManager.
+     */
+    private fun sendUpdateBroadcast(subtaskName: String, remainingSeconds: Long) {
+        val intent = Intent(BROADCAST_UPDATE).apply {
+            putExtra(EXTRA_CURRENT_SUBTASK, subtaskName)
+            putExtra(EXTRA_REMAINING_TIME, remainingSeconds)
         }
-
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-        val desiredVolume = (maxVolume * 0.7).toInt()
-        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, desiredVolume, 0)
-
-        val originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
-        val ringtone = RingtoneManager.getRingtone(applicationContext, ringtoneUri)
-        ringtone.audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-
-        ringtone.play()
-
-        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        val vibrationEffect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val vibrationEffect = VibrationEffect.createWaveform(longArrayOf(0, 500, 500), 0)
-            vibrator.vibrate(vibrationEffect)
-        } else {
-            @Suppress("DEPRECATION") // Suppress deprecation warning for older API levels
-            vibrator.vibrate(longArrayOf(0, 500, 500), 0)        }
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            vibrator.vibrate(vibrationEffect)
-//        } else {
-//            vibrator.vibrate(longArrayOf(0, 500, 500), 0)
-//        }
-
-        // Показать кастомное диалоговое окно
-        showAlarmDialog(
-            subtaskName,
-            duration,
-            subtasks,
-            totalTime,
-            ringtone,
-            vibrator,
-            originalVolume
-        )
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
-    private fun showAlarmDialog(
-        subtaskName: String,
-        duration: Long,
-        subtasks: List<Subtask>,
-        totalTime: Long,
-        ringtone: Ringtone,
-        vibrator: Vibrator,
-        originalVolume: Int
-    ) {
-        val windowContext = applicationContext
-        val layoutInflater = LayoutInflater.from(windowContext)
-        val dialogView = layoutInflater.inflate(R.layout.dialog_alarm, null)
-        val currentSubtaskText = "$subtaskName завершена за ${formatElapsedTime(duration)}" +
-                if (subtasks[currentSubtaskIndex].isHighPriority) "\n(Высокий приоритет)" else ""
-        val nextSubtask = if (currentSubtaskIndex + 1 < subtasks.size) {
-            "Следующая подзадача: ${subtasks[currentSubtaskIndex + 1].description}"
-        } else {
-            "Это была последняя подзадача!"
-        }
-        dialogView.findViewById<TextView>(R.id.dialog_message).text =
-            "$currentSubtaskText\n\n$nextSubtask"
-
-        val alertDialog = AlertDialog.Builder(windowContext)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
-
-        alertDialog.window?.apply {
-            setType(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                else
-                    WindowManager.LayoutParams.TYPE_PHONE
-            )
-            addFlags(
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
-                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-            )
-        }
-
-        alertDialog.show()
-
-        dialogView.findViewById<Button>(R.id.dialog_button).setOnClickListener {
-            ringtone.stop()
-            vibrator.cancel()
-            alertDialog.dismiss()
-
-            // Восстанавливаем громкость
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, originalVolume, 0)
-
-            currentSubtaskIndex++
-            if (currentSubtaskIndex < subtasks.size) {
-                startAlgorithmTimer(subtasks, totalTime)
-            } else {
-                completeAlgorithm()
-            }
-        }
+    /**
+     * Сохраняет текущий индекс подзадачи в SharedPreferences.
+     */
+    private fun saveCurrentSubtaskIndex(index: Int) {
+        getSharedPreferences("TaskTimerPrefs", MODE_PRIVATE).edit()
+            .putInt("currentSubtaskIndex", index).apply()
     }
 
-    private fun completeAlgorithm() {
-        Toast.makeText(applicationContext, "Все подзадачи завершены!", Toast.LENGTH_SHORT).show()
-        stopForeground(true)
-        stopSelf()
+    /**
+     * Загружает текущий индекс подзадачи из SharedPreferences.
+     */
+    private fun loadCurrentSubtaskIndex(): Int {
+        return getSharedPreferences("TaskTimerPrefs", MODE_PRIVATE)
+            .getInt("currentSubtaskIndex", 0)
     }
 
+    /**
+     * Сохраняет оставшееся время в SharedPreferences.
+     */
+    private fun saveRemainingTime(time: Long) {
+        getSharedPreferences("TaskTimerPrefs", MODE_PRIVATE).edit()
+            .putLong("remainingTime", time).apply()
+    }
+
+    /**
+     * Загружает оставшееся время из SharedPreferences.
+     */
+    private fun loadRemainingTime(): Long {
+        return getSharedPreferences("TaskTimerPrefs", MODE_PRIVATE)
+            .getLong("remainingTime", 0)
+    }
+
+    /**
+     * Создает уведомление с текущим временем.
+     */
     private fun createNotification(time: String): Notification {
         val pendingIntent = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java),
@@ -233,6 +179,9 @@ class TaskTimerService : Service() {
             .build()
     }
 
+    /**
+     * Обновляет уведомление каждую секунду.
+     */
     private fun updateNotification() {
         handler.postDelayed({
             val elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000
@@ -240,10 +189,13 @@ class TaskTimerService : Service() {
             val notification = createNotification(time)
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.notify(NOTIFICATION_ID, notification)
-            updateNotification() // Рекурсивно вызываем для обновления
+            updateNotification()
         }, updateInterval)
     }
 
+    /**
+     * Форматирует время в формате HH:mm:ss.
+     */
     private fun formatElapsedTime(seconds: Long): String {
         val hours = seconds / 3600
         val minutes = (seconds % 3600) / 60
@@ -251,6 +203,9 @@ class TaskTimerService : Service() {
         return String.format("%02d:%02d:%02d", hours, minutes, secs)
     }
 
+    /**
+     * Создает канал уведомлений для Android 8.0 и выше.
+     */
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -266,8 +221,9 @@ class TaskTimerService : Service() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        currentTimer?.cancel()
         handler.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
