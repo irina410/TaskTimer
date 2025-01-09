@@ -1,3 +1,5 @@
+package com.example.tasktimer.view
+
 import android.app.AlertDialog
 import android.app.NotificationManager
 import android.app.NotificationChannel
@@ -23,7 +25,7 @@ class TaskAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         // Создаем ViewHolder для элемента задачи
-        Log.d("TaskAdapter", "onCreateViewHolder: Создание нового элемента списка")
+        Log.d("com.example.tasktimer.view.TaskAdapter", "onCreateViewHolder: Создание нового элемента списка")
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_task, parent, false)
         return TaskViewHolder(view)
@@ -31,18 +33,18 @@ class TaskAdapter(
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         // Привязываем задачу к ViewHolder
-        Log.d("TaskAdapter", "onBindViewHolder: Привязка задачи к элементу списка, позиция: $position")
+        Log.d("com.example.tasktimer.view.TaskAdapter", "onBindViewHolder: Привязка задачи к элементу списка, позиция: $position")
         val task = tasks[position]
         holder.bind(task, onTaskDelete)
     }
 
     override fun getItemCount(): Int {
-        Log.d("TaskAdapter", "getItemCount: Количество элементов в списке: ${tasks.size}")
+        Log.d("com.example.tasktimer.view.TaskAdapter", "getItemCount: Количество элементов в списке: ${tasks.size}")
         return tasks.size // Количество элементов
     }
 
     private fun formatTime(seconds: Long): String {
-        Log.d("TaskAdapter", "formatTime: Форматируем время $seconds секунд в формат HH:MM:SS")
+        Log.d("com.example.tasktimer.view.TaskAdapter", "formatTime: Форматируем время $seconds секунд в формат HH:MM:SS")
         val hours = seconds / 3600
         val minutes = (seconds % 3600) / 60
         val secs = seconds % 60
@@ -66,12 +68,12 @@ class TaskAdapter(
         private val channelId = "TASK_TIMER_CHANNEL"
 
         init {
-            Log.d("TaskAdapter", "TaskViewHolder: Инициализация ViewHolder")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "TaskViewHolder: Инициализация ViewHolder")
             createNotificationChannel() // Создаем канал для уведомлений
         }
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
-            Log.d("TaskAdapter", "TaskViewHolder.bind: Привязываем задачу ${task.number} к UI")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "TaskViewHolder.bind: Привязываем задачу ${task.number} к UI")
 
             taskNumber.text = task.number.toString() // Номер задачи
             algorithmName.text = task.algorithm.name // Название алгоритма
@@ -80,7 +82,7 @@ class TaskAdapter(
             updateButtonIcon(isRunning) // Обновляем иконку кнопки
 
             startStopButton.setOnClickListener {
-                Log.d("TaskAdapter", "TaskViewHolder.bind: Кнопка 'Старт/Стоп' нажата для задачи ${task.number}")
+                Log.d("com.example.tasktimer.view.TaskAdapter", "TaskViewHolder.bind: Кнопка 'Старт/Стоп' нажата для задачи ${task.number}")
                 val serviceIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
                     putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
                     putExtra(TaskTimerService.EXTRA_SUBTASK_NAME, task.algorithm.subtasks[0].description)
@@ -98,27 +100,27 @@ class TaskAdapter(
             }
 
             itemView.setOnLongClickListener {
-                Log.d("TaskAdapter", "TaskViewHolder.bind: Долгий клик на задаче ${task.number} для удаления")
+                Log.d("com.example.tasktimer.view.TaskAdapter", "TaskViewHolder.bind: Долгий клик на задаче ${task.number} для удаления")
                 showDeleteConfirmationDialog(itemView.context, task, onTaskDelete)
                 true
             }
         }
 
         private fun updateButtonIcon(isRunning: Boolean) {
-            Log.d("TaskAdapter", "updateButtonIcon: Обновление иконки кнопки, состояние: $isRunning")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "updateButtonIcon: Обновление иконки кнопки, состояние: $isRunning")
             startStopButton.setImageResource(
                 if (isRunning) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
             )
         }
 
         private fun startTaskTimer() {
-            Log.d("TaskAdapter", "startTaskTimer: Запуск таймера для задачи")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "startTaskTimer: Запуск таймера для задачи")
             isRunning = true
             updateButtonIcon(true)
         }
 
         private fun stopTaskTimer() {
-            Log.d("TaskAdapter", "stopTaskTimer: Остановка таймера для задачи")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "stopTaskTimer: Остановка таймера для задачи")
             isRunning = false
             subtaskCountdown.text = "Оставшееся время: -"
             currentSubtask.text = "Текущая подзадача: -"
@@ -130,7 +132,7 @@ class TaskAdapter(
             task: Task,
             onTaskDelete: (Task) -> Unit
         ) {
-            Log.d("TaskAdapter", "showDeleteConfirmationDialog: Подтверждение удаления задачи ${task.number}")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "showDeleteConfirmationDialog: Подтверждение удаления задачи ${task.number}")
             AlertDialog.Builder(context)
                 .setTitle("Удалить задачу?")
                 .setMessage("Вы точно хотите удалить задачу №${task.number} (${task.algorithm.name})?")
@@ -140,7 +142,7 @@ class TaskAdapter(
         }
 
         private fun createNotificationChannel() {
-            Log.d("TaskAdapter", "createNotificationChannel: Создание канала уведомлений для Android 8+")
+            Log.d("com.example.tasktimer.view.TaskAdapter", "createNotificationChannel: Создание канала уведомлений для Android 8+")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
                     channelId,

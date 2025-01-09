@@ -73,12 +73,12 @@ class TaskTimerService : Service() {
     private fun startSubtaskTimer() {
         Log.d("TaskTimerService", "startSubtaskTimer: Запуск таймера для подзадачи")
         if (currentSubtaskIndex >= subtasks.size) {
-            stopSelf()
+            //stopSelf()
             return
         }
 
         val currentSubtask = subtasks[currentSubtaskIndex]
-        remainingTime = currentSubtask.duration // Время текущей подзадачи
+        remainingTime = currentSubtask.duration  * 1000// Время текущей подзадачи
 
         // Создаем уведомление
         startForeground(NOTIFICATION_ID, createNotification(formatTime(remainingTime), currentSubtask.description))
@@ -86,6 +86,8 @@ class TaskTimerService : Service() {
         // Запускаем таймер
         currentTimer = object : CountDownTimer(remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
+                Log.d("TaskTimerService", "onTick: Таймер запущен для подзадачи")
+
                 remainingTime = millisUntilFinished
                 updateNotification(formatTime(remainingTime), currentSubtask.description)
             }
@@ -107,13 +109,11 @@ class TaskTimerService : Service() {
     }
 
     // Форматируем время в формат HH:MM:SS
-    private fun formatTime(seconds: Long): String {
-        val hours = seconds / 3600
-        val minutes = (seconds % 3600) / 60
-        val secs = seconds % 60
-        val time = String.format("%02d:%02d:%02d", hours, minutes, secs)
-        Log.d("TaskTimerService", "formatTime: Отформатированное время - $time")
-        return time
+    fun formatTime(milliseconds: Long): String {
+        val hours = milliseconds / 3600000
+        val minutes = (milliseconds % 3600000) / 60000
+        val seconds = (milliseconds % 60000) / 1000
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
     }
 
     // --- Уведомления ---
@@ -161,6 +161,31 @@ class TaskTimerService : Service() {
         }
     }
 
+    private fun createCountdownNotification(endTime: Long, subtaskName: String): Notification {
+        Log.d("TaskTimerService", "createCountdownNotification: Создание уведомления с обратным отсчетом")
+
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Задача: $taskName")
+            .setContentText("Подзадача: $subtaskName")
+            .setSmallIcon(R.drawable.ic_timer)
+            .setContentIntent(pendingIntent)
+            .setUsesChronometer(true) // Включаем хронограф
+            .setChronometerCountDown(true) // Включаем обратный отсчет
+            .setWhen(endTime) // Указываем время завершения (в миллисекундах)
+            .setOngoing(true)
+            .build()
+    }
+
+
+
     // --- Будильник ---
     private fun triggerAlarm(priority: Boolean) {
         Log.d("TaskTimerService", "triggerAlarm: Запуск будильника с приоритетом $priority")
@@ -181,47 +206,14 @@ class TaskTimerService : Service() {
 // --- Ресивер для будильника ---
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        val priority = intent?.getIntExtra("priority", 0) ?: 0
-        Log.d("AlarmReceiver", "onReceive: Получен будильник с приоритетом $priority")
+        Log.d("AlarmReceiver", "onReceive: Будильник запущен")
+        var priority = intent?.getBooleanExtra("priority", false)
+        val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
+            putExtra("ALARM_MESSAGE", "Время вышло!") // Можно передать кастомное сообщение
+            putExtra("priority", priority)
 
-        // Логика вибрации и звука будильника
-        val ringtoneUri = when (priority) {
-            1 -> R.raw.basic_alarm_ringtone
-            2 -> R.raw.electronic_alarm_signal
-            else -> R.raw.basic_alarm_ringtone
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-
-        // Получаем AudioManager
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-        // Сохраняем текущий уровень громкости
-        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
-
-        // Уменьшаем громкость для теста (например, до 20% от текущего уровня)
-        val reducedVolume = (currentVolume * 0.2).toInt()
-        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, reducedVolume, 0)
-
-        // Воспроизведение звука будильника
-        val mediaPlayer = MediaPlayer.create(context, ringtoneUri)
-        mediaPlayer.start()
-
-        // Возвращаем громкость в исходное состояние через небольшой промежуток времени
-        mediaPlayer.setOnCompletionListener {
-            // Восстанавливаем исходный уровень громкости
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, currentVolume, 0)
-        }
-
-        // Вибрация
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            vibrator.vibrate(500)
-        }
-
-        // Вызов активити будильника
-        val alarmIntent = Intent(context, AlarmActivity::class.java)
-        alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(alarmIntent)
     }
 }

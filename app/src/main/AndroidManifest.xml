@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
 
 
@@ -36,6 +37,9 @@
         <service
             android:name=".model.TaskTimerService"
             android:foregroundServiceType="dataSync" />
+
+        <receiver android:name=".model.AlarmReceiver" />
+
     </application>
 
 </manifest>

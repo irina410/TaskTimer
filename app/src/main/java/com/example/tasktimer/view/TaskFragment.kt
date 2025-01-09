@@ -1,6 +1,5 @@
 package com.example.tasktimer.view
 
-import TaskAdapter
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Task
-import com.example.tasktimer.model.Algorithm
 import com.example.tasktimer.repository.AlgorithmRepository
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
