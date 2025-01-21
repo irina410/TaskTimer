@@ -71,36 +71,45 @@ class TaskTimerService : Service() {
 
     // --- Логика таймера для подзадачи ---
     private fun startSubtaskTimer() {
-        Log.d("TaskTimerService", "startSubtaskTimer: Запуск таймера для подзадачи")
         if (currentSubtaskIndex >= subtasks.size) {
-            //stopSelf()
+            Log.d("TaskTimerService", "Все подзадачи завершены")
+            clearAllNotifications()
+            stopSelf()
             return
         }
 
         val currentSubtask = subtasks[currentSubtaskIndex]
-        remainingTime = currentSubtask.duration  * 1000// Время текущей подзадачи
+        remainingTime = currentSubtask.duration * 1000 // Время подзадачи в миллисекундах
 
-        // Создаем уведомление
-        startForeground(NOTIFICATION_ID, createNotification(formatTime(remainingTime), currentSubtask.description))
+        // Уведомление с обратным отсчетом
+        startForeground(
+            NOTIFICATION_ID,
+            createCountdownNotification(System.currentTimeMillis() + remainingTime, currentSubtask.description)
+        )
 
-        // Запускаем таймер
+        // Таймер обратного отсчета
         currentTimer = object : CountDownTimer(remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                Log.d("TaskTimerService", "onTick: Таймер запущен для подзадачи")
-
                 remainingTime = millisUntilFinished
-                updateNotification(formatTime(remainingTime), currentSubtask.description)
+                val formattedTime = formatTime(millisUntilFinished)
+                updateNotification(formattedTime, currentSubtask.description)
             }
 
             override fun onFinish() {
-                Log.d("TaskTimerService", "onFinish: Таймер завершен для подзадачи")
-                triggerAlarm(currentSubtask.isHighPriority) // Вызов будильника
+                // Вызов будильника после завершения таймера
+                triggerAlarm(currentSubtask.isHighPriority)
+
+                // Переключаемся на следующую подзадачу
                 currentSubtaskIndex++
-                startSubtaskTimer() // Переход к следующей подзадаче
+                startSubtaskTimer()
             }
-        }.start()
-        isRunning = true
+        }
+        currentTimer?.start()
     }
+
+
+
+
 
     private fun stopCurrentTimer() {
         Log.d("TaskTimerService", "stopCurrentTimer: Остановка текущего таймера")
@@ -184,23 +193,25 @@ class TaskTimerService : Service() {
             .build()
     }
 
+    private fun clearAllNotifications() {
+        Log.d("TaskTimerService", "clearAllNotifications: Удаление всех уведомлений")
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancelAll() // Удаляем все уведомления
+    }
 
 
     // --- Будильник ---
     private fun triggerAlarm(priority: Boolean) {
         Log.d("TaskTimerService", "triggerAlarm: Запуск будильника с приоритетом $priority")
-        val alarmIntent = Intent(this, AlarmReceiver::class.java).apply {
+
+        val alarmIntent = Intent(this, AlarmActivity::class.java).apply {
+            putExtra("ALARM_MESSAGE", "Время вышло!")
             putExtra("priority", priority)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            0,
-            alarmIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent)
+        startActivity(alarmIntent)
     }
+
 }
 
 // --- Ресивер для будильника ---
@@ -217,3 +228,7 @@ class AlarmReceiver : BroadcastReceiver() {
         context.startActivity(alarmIntent)
     }
 }
+
+
+// с - 13 раз
+// я - 14 раз

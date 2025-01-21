@@ -2,6 +2,7 @@ package com.example.tasktimer.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -41,28 +42,31 @@ class AlarmActivity : AppCompatActivity() {
 
         // Кнопка для остановки будильника
         findViewById<View>(R.id.dismiss_button).setOnClickListener {
-            Log.d("AlarmActivity", "onCreate: Нажата кнопка для остановки будильника")
+            Log.d("AlarmActivity", "Кнопка 'Готово' нажата")
             stopAlarmSound()
             stopVibration()
+
+            // Устанавливаем результат завершения подзадачи
+            val resultIntent = Intent().apply {
+                putExtra("SUBTASK_COMPLETED", true)
+            }
+            setResult(RESULT_OK, resultIntent)
             finish()
         }
+
     }
 
     private fun playAlarmSound(priority: Boolean) {
         Log.d("AlarmActivity", "playAlarmSound: Воспроизведение звука будильника")
-        setAlarmVolume(1)
+        setAlarmVolume(0)
         val ringtoneResId = when (priority) {
             false -> {
                 Log.d("AlarmActivity", "playAlarmSound: Using basic_alarm_ringtone $priority")
-                R.raw.basic_alarm_ringtone
+                //R.raw.basic_alarm_ringtone
             }
             true -> {
                 Log.d("AlarmActivity", "playAlarmSound: Using electronic_alarm_signal $priority")
-                R.raw.electronic_alarm_signal
-            }
-            else -> {
-                Log.d("AlarmActivity", "playAlarmSound: Using default basic_alarm_ringtone")
-                R.raw.basic_alarm_ringtone
+                //R.raw.electronic_alarm_signal
             }
         }
 
