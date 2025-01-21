@@ -2,8 +2,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
     <TextView
         android:id="@+id/taskNumber"
@@ -46,6 +51,33 @@
         android:src="@android:drawable/ic_media_play"
         app:backgroundTint="#FCF5FD"
         app:elevation="0dp"/>
+</LinearLayout>
+    <LinearLayout
+        android:id="@+id/subtaskLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingTop="8dp">
 
+        <TextView
+            android:id="@+id/subtaskCountdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Оставшееся время: 00:00:00"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:textColor="#FF0000"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/currentSubtask"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Текущая подзадача: Название подзадачи"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:textColor="#000000" />
+    </LinearLayout>
 
 </LinearLayout>

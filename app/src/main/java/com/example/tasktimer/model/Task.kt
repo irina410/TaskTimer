@@ -1,6 +1,5 @@
 package com.example.tasktimer.model
 
-import com.example.tasktimer.model.Algorithm
 
 data class Task(
     val number: Int,  // Уникальный номер задачи
