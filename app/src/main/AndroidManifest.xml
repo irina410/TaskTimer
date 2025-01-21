@@ -38,7 +38,8 @@
             android:name=".model.TaskTimerService"
             android:foregroundServiceType="dataSync" />
 
-        <receiver android:name=".model.AlarmReceiver" />
+        <receiver android:name=".model.AlarmReceiver"
+            android:exported="false" /> <!-- Указываем, что ресивер не экспортируется -->
 
     </application>
 

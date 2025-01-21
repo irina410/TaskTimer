@@ -46,13 +46,15 @@ class AlarmActivity : AppCompatActivity() {
             stopAlarmSound()
             stopVibration()
 
-            // Устанавливаем результат завершения подзадачи
-            val resultIntent = Intent().apply {
+            // Отправляем Broadcast о завершении подзадачи
+            val intent = Intent("com.example.tasktimer.SUBTASK_COMPLETED").apply {
                 putExtra("SUBTASK_COMPLETED", true)
             }
-            setResult(RESULT_OK, resultIntent)
+            sendBroadcast(intent)
+
             finish()
         }
+
 
     }
 

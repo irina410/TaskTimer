@@ -9,6 +9,7 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -79,34 +80,54 @@ class TaskTimerService : Service() {
         }
 
         val currentSubtask = subtasks[currentSubtaskIndex]
-        remainingTime = currentSubtask.duration * 1000 // Время подзадачи в миллисекундах
+        remainingTime = currentSubtask.duration * 1000
 
-        // Уведомление с обратным отсчетом
-        startForeground(
-            NOTIFICATION_ID,
-            createCountdownNotification(System.currentTimeMillis() + remainingTime, currentSubtask.description)
-        )
+        // Останавливаем текущий таймер, если он работает
+        stopCurrentTimer()
 
-        // Таймер обратного отсчета
         currentTimer = object : CountDownTimer(remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 remainingTime = millisUntilFinished
-                val formattedTime = formatTime(millisUntilFinished)
+                val formattedTime = formatTime(remainingTime)
                 updateNotification(formattedTime, currentSubtask.description)
+                Log.d("TaskTimerService", "Осталось времени: $formattedTime")
             }
 
             override fun onFinish() {
-                // Вызов будильника после завершения таймера
-                triggerAlarm(currentSubtask.isHighPriority)
+                Log.d("TaskTimerService", "Таймер подзадачи #$currentSubtaskIndex завершён")
 
-                // Переключаемся на следующую подзадачу
-                currentSubtaskIndex++
-                startSubtaskTimer()
+                // Запуск AlarmActivity
+                val alarmIntent = Intent(this@TaskTimerService, AlarmActivity::class.java).apply {
+                    putExtra("ALARM_MESSAGE", currentSubtask.description)
+                    putExtra("ALARM_PRIORITY", currentSubtask.isHighPriority)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(alarmIntent)
+
+                // Ждём завершения подзадачи через BroadcastReceiver
+                val alarmResultReceiver = object : BroadcastReceiver() {
+                    override fun onReceive(context: Context?, intent: Intent?) {
+                        val isSubtaskCompleted = intent?.getBooleanExtra("SUBTASK_COMPLETED", false) ?: false
+                        if (isSubtaskCompleted) {
+                            Log.d("TaskTimerService", "Подзадача #$currentSubtaskIndex завершена")
+                            currentSubtaskIndex++
+                            startSubtaskTimer() // Переходим к следующей подзадаче
+                        }
+                        unregisterReceiver(this) // Убираем ресивер после обработки
+                    }
+                }
+
+                val filter = IntentFilter("com.example.tasktimer.SUBTASK_COMPLETED")
+                registerReceiver(alarmResultReceiver, filter, Context.RECEIVER_EXPORTED)
+
             }
         }
-        currentTimer?.start()
-    }
 
+        // Запускаем таймер
+        currentTimer?.start()
+        isRunning = true
+        Log.d("TaskTimerService", "Таймер подзадачи #$currentSubtaskIndex запущен на ${currentSubtask.duration} мс")
+    }
 
 
 
