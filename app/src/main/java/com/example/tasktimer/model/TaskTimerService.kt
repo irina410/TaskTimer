@@ -58,6 +58,9 @@ class TaskTimerService : Service() {
             currentSubtaskIndex = 0
             startSubtaskTimer()
         }
+        // Перевод сервиса в Foreground
+        val notification = createNotification("00:00:00", "Таймер запущен")
+        startForeground(NOTIFICATION_ID, notification)
 
         return START_STICKY // Продолжать работу даже при закрытии приложения
     }
