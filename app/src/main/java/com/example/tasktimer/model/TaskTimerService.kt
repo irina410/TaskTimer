@@ -51,6 +51,13 @@ class TaskTimerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("TaskTimerService", "onStartCommand: Сервис получен с intent: $intent")
+
+        if (intent?.action == "STOP_TASK") {
+            stopCurrentTimer()
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         taskName = intent?.getStringExtra(EXTRA_TASK_NAME)
         subtasks = intent?.getParcelableArrayListExtra(EXTRA_SUBTASKS) ?: emptyList()
 
@@ -58,22 +65,14 @@ class TaskTimerService : Service() {
             currentSubtaskIndex = 0
             startSubtaskTimer()
         }
+
         // Перевод сервиса в Foreground
         val notification = createNotification("00:00:00", "Таймер запущен")
         startForeground(NOTIFICATION_ID, notification)
 
-        return START_STICKY // Продолжать работу даже при закрытии приложения
+        return START_STICKY
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("TaskTimerService", "onDestroy: Сервис уничтожен")
-        stopCurrentTimer()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
-
-    // --- Логика таймера для подзадачи ---
     private fun startSubtaskTimer() {
         if (currentSubtaskIndex >= subtasks.size) {
             Log.d("TaskTimerService", "Все подзадачи завершены")
@@ -81,6 +80,8 @@ class TaskTimerService : Service() {
             stopSelf()
             return
         }
+        isRunning = true
+        sendTaskStateUpdate(true) // Отправляем состояние "задача запущена"
 
         val currentSubtask = subtasks[currentSubtaskIndex]
         remainingTime = currentSubtask.duration * 1000
@@ -122,24 +123,40 @@ class TaskTimerService : Service() {
 
                 val filter = IntentFilter("com.example.tasktimer.SUBTASK_COMPLETED")
                 registerReceiver(alarmResultReceiver, filter, Context.RECEIVER_EXPORTED)
-
             }
         }
 
         // Запускаем таймер
         currentTimer?.start()
-        isRunning = true
         Log.d("TaskTimerService", "Таймер подзадачи #$currentSubtaskIndex запущен на ${currentSubtask.duration} мс")
     }
-
-
-
 
     private fun stopCurrentTimer() {
         Log.d("TaskTimerService", "stopCurrentTimer: Остановка текущего таймера")
         currentTimer?.cancel()
         isRunning = false
+        sendTaskStateUpdate(false) // Отправляем состояние "задача остановлена"
     }
+
+    private fun sendTaskStateUpdate(isRunning: Boolean) {
+        val intent = Intent("com.example.tasktimer.TASK_STATE_UPDATE").apply {
+            putExtra("TASK_NAME", taskName)
+            putExtra("IS_RUNNING", isRunning)
+        }
+        sendBroadcast(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("TaskTimerService", "onDestroy: Сервис уничтожен")
+        stopCurrentTimer()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+
+
+
 
     // Форматируем время в формат HH:MM:SS
     fun formatTime(milliseconds: Long): String {
