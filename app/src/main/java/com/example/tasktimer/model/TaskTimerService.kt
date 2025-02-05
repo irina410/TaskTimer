@@ -103,7 +103,9 @@ class TaskTimerService : Service() {
                 // Запуск AlarmActivity
                 val alarmIntent = Intent(this@TaskTimerService, AlarmActivity::class.java).apply {
                     putExtra("ALARM_MESSAGE", currentSubtask.description)
-                    putExtra("ALARM_PRIORITY", currentSubtask.isHighPriority)
+                    putExtra("priority", currentSubtask.isHighPriority)
+                    putExtra("COMPLETED_SUBTASK", currentSubtask.description)
+                    putExtra("NEXT_SUBTASK", if (currentSubtaskIndex + 1 < subtasks.size) subtasks[currentSubtaskIndex + 1].description else "Нет данных")
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
                 startActivity(alarmIntent)
