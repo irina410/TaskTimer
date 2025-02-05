@@ -14,12 +14,9 @@ import com.example.tasktimer.model.TaskTimerService
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class TaskAdapter(
-    private val tasks: MutableList<Task>, // Список задач
-    private val onTaskDelete: (Task) -> Unit // Callback для удаления задачи
+    private val tasks: MutableList<Task>,
+    private val onTaskDelete: (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
-
-    private var currentTaskIndex: Int = -1 // Индекс задачи с текущей подзадачей
-    private var currentSubtaskIndex: Int = -1 // Индекс текущей подзадачи
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -28,30 +25,10 @@ class TaskAdapter(
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        val task = tasks[position]
-        holder.bind(task, onTaskDelete)
-
-        // Обновляем текущую подзадачу, если она относится к этой задаче
-        if (position == currentTaskIndex) {
-            holder.updateCurrentSubtask(currentSubtaskIndex)
-        } else {
-            holder.clearCurrentSubtask()
-        }
+        holder.bind(tasks[position], onTaskDelete)
     }
 
     override fun getItemCount(): Int = tasks.size
-
-    /**
-     * Обновляет текущую задачу и подзадачу.
-     */
-    fun updateCurrentSubtask(taskIndex: Int, subtaskIndex: Int) {
-        val previousTaskIndex = currentTaskIndex
-        currentTaskIndex = taskIndex
-        currentSubtaskIndex = subtaskIndex
-
-        if (previousTaskIndex != -1) notifyItemChanged(previousTaskIndex)
-        if (currentTaskIndex != -1) notifyItemChanged(currentTaskIndex)
-    }
 
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -59,8 +36,7 @@ class TaskAdapter(
         private val algorithmName: TextView = itemView.findViewById(R.id.taskName)
         private val taskTime: TextView = itemView.findViewById(R.id.taskTime)
         private val startStopButton: FloatingActionButton = itemView.findViewById(R.id.startStopButton)
-        private val subtaskCountdown: TextView = itemView.findViewById(R.id.subtaskCountdown)
-        private val currentSubtask: TextView = itemView.findViewById(R.id.currentSubtask)
+        private var isRunning = false
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
             taskNumber.text = task.number.toString()
@@ -68,12 +44,14 @@ class TaskAdapter(
             taskTime.text = formatTime(task.algorithm.totalTime)
 
             startStopButton.setOnClickListener {
-                val serviceIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
-                    putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
-                    putParcelableArrayListExtra("subtasks", ArrayList(task.algorithm.subtasks))
-                }
+                isRunning = !isRunning
+                updateButtonIcon()
 
-                itemView.context.startService(serviceIntent)
+                if (isRunning) {
+                    startTask(task)
+                } else {
+                    stopTask(task)
+                }
             }
 
             itemView.setOnLongClickListener {
@@ -82,27 +60,26 @@ class TaskAdapter(
             }
         }
 
-        /**
-         * Обновляет отображение текущей подзадачи.
-         */
-        fun updateCurrentSubtask(index: Int) {
-            val task = tasks[adapterPosition]
-            val subtask = task.algorithm.subtasks.getOrNull(index)
-
-            if (subtask != null) {
-                subtaskCountdown.text = "Оставшееся время: ${formatTime(subtask.duration)}"
-                currentSubtask.text = "Текущая подзадача: ${subtask.description}"
-            } else {
-                clearCurrentSubtask()
+        private fun startTask(task: Task) {
+            val serviceIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
+                putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
+                putParcelableArrayListExtra("subtasks", ArrayList(task.algorithm.subtasks))
             }
+            itemView.context.startService(serviceIntent)
         }
 
-        /**
-         * Очищает отображение текущей подзадачи.
-         */
-        fun clearCurrentSubtask() {
-            subtaskCountdown.text = "Оставшееся время: -"
-            currentSubtask.text = "Текущая подзадача: -"
+        private fun stopTask(task: Task) {
+            val stopIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
+                action = TaskTimerService.ACTION_STOP_TASK
+                putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
+            }
+            itemView.context.startService(stopIntent)
+        }
+
+        private fun updateButtonIcon() {
+            startStopButton.setImageResource(
+                if (isRunning) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
+            )
         }
 
         private fun showDeleteConfirmationDialog(
