@@ -57,15 +57,20 @@ class TaskTimer(
         currentTimer = object : CountDownTimer(remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 remainingTime = millisUntilFinished
-                val formattedTime = formatTime(remainingTime)
-                updateNotification(formattedTime, currentSubtask.description)
-                Log.d("TaskTimer", "Осталось времени: $formattedTime")
+                updateNotification(formatTime(remainingTime), currentSubtask.description)
+
+                // Сообщаем сервису обновить главное уведомление
+                val intent = Intent("com.example.tasktimer.UPDATE_NOTIFICATION")
+                context.sendBroadcast(intent)
             }
 
             override fun onFinish() {
-                Log.d("TaskTimer", "Таймер подзадачи #$currentSubtaskIndex завершён")
-                triggerAlarm(currentSubtask.isHighPriority) // Запускаем будильник
-                waitForUserConfirmation() // Ждем подтверждения пользователя
+                triggerAlarm(currentSubtask.isHighPriority)
+                waitForUserConfirmation()
+
+                // Обновляем главное уведомление
+                val intent = Intent("com.example.tasktimer.UPDATE_NOTIFICATION")
+                context.sendBroadcast(intent)
             }
         }
 
@@ -150,4 +155,9 @@ class TaskTimer(
         val seconds = (milliseconds % 60000) / 1000
         return String.format("%02d:%02d:%02d", hours, minutes, seconds)
     }
+    fun isRunning(): Boolean = isRunning
+    fun remainingTime(): Long = remainingTime
+    fun taskName(): String = taskName
+    fun formatTime(): String = formatTime(remainingTime)
+    fun currentSubtaskName(): String = subtasks.getOrNull(currentSubtaskIndex)?.description ?: "Неизвестная подзадача"
 }

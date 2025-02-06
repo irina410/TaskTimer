@@ -5,8 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
@@ -32,26 +34,41 @@ class TaskTimerService : Service() {
     private val notificationManager by lazy {
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
+    private val notificationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            updateMainNotification() // Обновляем уведомление при каждом тике таймера
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel() // Создаем канал уведомлений при создании сервиса
+        createNotificationChannel()
+
+        // Регистрируем приёмник
+        val filter = IntentFilter("com.example.tasktimer.UPDATE_NOTIFICATION")
+        registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(notificationReceiver) // Чистим мусор
+    }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP_TASK -> stopTask(intent)
             else -> startTask(intent)
         }
-        return START_STICKY
+        return START_STICKY // Теперь сервис перезапустится при убийстве системы
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    override fun onDestroy() {
-        activeTimers.values.forEach { it.stop() } // Останавливаем все таймеры при уничтожении сервиса
-        super.onDestroy()
-    }
+//    override fun onDestroy() {
+//        activeTimers.values.forEach { it.stop() } // Останавливаем все таймеры при уничтожении сервиса
+//        super.onDestroy()
+//    }
 
     // --- Логика запуска задачи ---
     private fun startTask(intent: Intent?) {
@@ -63,8 +80,8 @@ class TaskTimerService : Service() {
         activeTimers[taskName] = taskTimer
         taskTimer.start()
 
-        // Переводим сервис в foreground
-        startForeground(NOTIFICATION_ID, createNotification(taskName, "00:00:00", "Таймер запущен"))
+        // Запускаем сервис в foreground с тихим уведомлением
+        startForeground(NOTIFICATION_ID, createSilentNotification())
     }
 
     // --- Логика остановки задачи ---
@@ -98,6 +115,41 @@ class TaskTimerService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+    // Тихое уведомление (не содержит текста, не вибрирует)
+    private fun createSilentNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_timer)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true) // Без звука и вибрации
+            .build()
+    }
+
+    private fun updateMainNotification() {
+        val nextTask = activeTimers.values
+            .filter { it.isRunning() }
+            .minByOrNull { it.remainingTime() } // Находим ближайшую задачу
+
+        if (nextTask != null) {
+            val notification = createNotification(
+                nextTask.taskName(),
+                nextTask.formatTime(),
+                nextTask.currentSubtaskName()
+            )
+            startForeground(NOTIFICATION_ID, notification) // Снова делаем сервис foreground
+        } else {
+            // НЕ ОСТАНАВЛИВАЕМ сервис, просто обновляем уведомление на "нет активных задач"
+            val emptyNotification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Task Timer")
+                .setContentText("Нет активных задач")
+                .setSmallIcon(R.drawable.ic_timer)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .build()
+
+            notificationManager.notify(NOTIFICATION_ID, emptyNotification)
+        }
+    }
+
+
 
     // --- Создание уведомления ---
     private fun createNotification(taskName: String, time: String, subtaskName: String): Notification {
