@@ -3,7 +3,6 @@ package com.example.tasktimer.view
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +21,7 @@ class TaskAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_task, parent, false)
-        return TaskViewHolder(view, parent.context.getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE))
+        return TaskViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
@@ -31,7 +30,7 @@ class TaskAdapter(
 
     override fun getItemCount(): Int = tasks.size
 
-    inner class TaskViewHolder(itemView: View, private val sharedPreferences: SharedPreferences) : RecyclerView.ViewHolder(itemView) {
+    inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val taskNumber: TextView = itemView.findViewById(R.id.taskNumber)
         private val algorithmName: TextView = itemView.findViewById(R.id.taskName)
@@ -43,13 +42,11 @@ class TaskAdapter(
             taskNumber.text = task.number.toString()
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
-            isRunning = sharedPreferences.getBoolean("TASK_${task.number}_RUNNING", false)
-            updateButtonIcon()
 
             startStopButton.setOnClickListener {
                 isRunning = !isRunning
-                sharedPreferences.edit().putBoolean("TASK_${task.number}_RUNNING", isRunning).apply()
                 updateButtonIcon()
+
                 if (isRunning) {
                     startTask(task)
                 } else {
@@ -73,7 +70,7 @@ class TaskAdapter(
 
         private fun stopTask(task: Task) {
             val stopIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
-                action = "STOP_TASK"
+                action = TaskTimerService.ACTION_STOP_TASK
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
             }
             itemView.context.startService(stopIntent)
