@@ -3,19 +3,61 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@color/white">
 
+    <!-- Заголовок задачи -->
     <TextView
-        android:id="@+id/alarm_message"
+        android:id="@+id/task_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Alarm message will appear here"
-        android:textSize="18sp" />
+        android:text="Задача #1: Название задачи (Общее время)"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="8dp" />
 
+    <!-- Высокий приоритет (если есть) -->
+    <TextView
+        android:id="@+id/priority_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Высокий приоритет!"
+        android:textSize="18sp"
+        android:textColor="@color/red"
+        android:visibility="gone"
+        android:gravity="center"
+        android:paddingBottom="8dp" />
+
+    <!-- Завершённая подзадача -->
+    <TextView
+        android:id="@+id/completed_subtask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Завершено: Название подзадачи (00:00)"
+        android:textSize="22sp"
+        android:paddingBottom="4dp" />
+
+    <!-- Следующая подзадача -->
+    <TextView
+        android:id="@+id/next_subtask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Следующее: Название следующей подзадачи"
+        android:textSize="20sp"
+        android:paddingBottom="16dp" />
+
+    <!-- Кнопка "Готово" -->
     <Button
         android:id="@+id/dismiss_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="готово"
-        android:layout_marginTop="16dp" />
+        android:text="Готово"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:gravity="center"
+        android:layout_marginTop="16dp"/>
+
 </LinearLayout>

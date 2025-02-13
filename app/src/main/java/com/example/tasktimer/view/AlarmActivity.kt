@@ -3,6 +3,7 @@ package com.example.tasktimer.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -10,10 +11,15 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.tasktimer.R
 
 class AlarmActivity : AppCompatActivity() {
@@ -26,15 +32,69 @@ class AlarmActivity : AppCompatActivity() {
         setContentView(R.layout.alarm_window)
 
         Log.d("AlarmActivity", "onCreate: Создание активности будильника")
+        // Убираем заголовок TaskTimer
+        supportActionBar?.hide()
 
-        // Получение сообщения и приоритета из Intent
-        val message = intent.getStringExtra("ALARM_MESSAGE") ?: "Время вышло!"
-        val priority = intent.getBooleanExtra("priority", false)
+        Log.d("AlarmActivity", "onCreate: Создание активности будильника")
 
-        Log.d("AlarmActivity", "onCreate: Сообщение: $message, Приоритет: $priority")
+        // Получение данных из Intent
+        val taskNumber = intent.getIntExtra("TASK_NUMBER", -1)
+        val taskName = intent.getStringExtra("TASK_NAME") ?: "Без названия"
+        val totalTime = intent.getStringExtra("TOTAL_TIME") ?: "Не указано"
+        val completedSubtask = intent.getStringExtra("COMPLETED_SUBTASK") ?: "Нет данных"
+        val completedTime = intent.getStringExtra("COMPLETED_TIME") ?: "?"
+        val nextSubtask = intent.getStringExtra("NEXT_SUBTASK")
+        val priority = intent.getBooleanExtra("PRIORITY", false)
 
-        // Установка текста сообщения
-        findViewById<TextView>(R.id.alarm_message).text = message
+        Log.d("AlarmActivity", "onCreate: Сообщение: $taskName, Приоритет: $priority")
+
+        // Устанавливаем заголовок с номером и названием задачи
+        findViewById<TextView>(R.id.task_title).text = "Задача #$taskNumber: $taskName ($totalTime)"
+
+        // Настраиваем отображение завершённой подзадачи
+        val completedTextView = findViewById<TextView>(R.id.completed_subtask)
+        val completedPrefix = "Завершено: "
+        val completedSpannable = SpannableString("$completedPrefix$completedSubtask ($completedTime)").apply {
+            setSpan(StyleSpan(Typeface.BOLD), completedPrefix.length, completedPrefix.length + completedSubtask.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        completedTextView.text = completedSpannable
+
+        // Настраиваем отображение следующей подзадачи
+        val nextTextView = findViewById<TextView>(R.id.next_subtask)
+        if (nextSubtask.isNullOrEmpty() || nextSubtask == "Нет данных") {
+            nextTextView.text = "Все подзадачи выполнены!"
+        } else {
+            val nextPrefix = "Следующее: "
+            val nextSpannable = SpannableString("$nextPrefix$nextSubtask").apply {
+                setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            nextTextView.text = nextSpannable
+        }
+
+        // Если высокий приоритет, добавляем красную надпись
+        val priorityTextView = findViewById<TextView>(R.id.priority_text)
+        if (priority) {
+            priorityTextView.text = "Высокий приоритет!"
+            priorityTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
+            priorityTextView.visibility = View.VISIBLE
+        } else {
+            priorityTextView.visibility = View.GONE
+        }
+        // Настраиваем кнопку "Готово"
+        val dismissButton = findViewById<Button>(R.id.dismiss_button)
+        dismissButton.setOnClickListener {
+            Log.d("AlarmActivity", "Кнопка 'Готово' нажата")
+            stopAlarmSound()
+            stopVibration()
+
+            // Отправляем Broadcast о завершении подзадачи
+            val intent = Intent("com.example.tasktimer.SUBTASK_COMPLETED").apply {
+                putExtra("SUBTASK_COMPLETED", true)
+            }
+            sendBroadcast(intent)
+
+            finish()
+        }
 
         // Настройка звука и вибрации
         playAlarmSound(priority)
@@ -54,8 +114,6 @@ class AlarmActivity : AppCompatActivity() {
 
             finish()
         }
-
-
     }
 
     private fun playAlarmSound(priority: Boolean) {
@@ -93,7 +151,6 @@ class AlarmActivity : AppCompatActivity() {
         }
     }
 
-
     private fun setAlarmVolume(volumeLevel: Int) {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
@@ -108,8 +165,6 @@ class AlarmActivity : AppCompatActivity() {
 
         Log.d("AlarmActivity", "setAlarmVolume: Громкость будильника установлена на $safeVolumeLevel из $maxVolume")
     }
-
-
 
     @SuppressLint("MissingPermission", "NewApi")
     private fun startVibration() {
