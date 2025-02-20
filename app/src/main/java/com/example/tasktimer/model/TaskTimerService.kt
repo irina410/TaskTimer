@@ -115,6 +115,7 @@ class TaskTimerService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
     // Тихое уведомление (не содержит текста, не вибрирует)
     private fun createSilentNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -136,23 +137,27 @@ class TaskTimerService : Service() {
                 nextTask.currentSubtaskName()
             )
             startForeground(NOTIFICATION_ID, notification) // Снова делаем сервис foreground
-        } else {
-            // НЕ ОСТАНАВЛИВАЕМ сервис, просто обновляем уведомление на "нет активных задач"
-            val emptyNotification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Task Timer")
-                .setContentText("Нет активных задач")
-                .setSmallIcon(R.drawable.ic_timer)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build()
-
-            notificationManager.notify(NOTIFICATION_ID, emptyNotification)
         }
+        //        else {
+//            // НЕ ОСТАНАВЛИВАЕМ сервис, просто обновляем уведомление на "нет активных задач"
+//            val emptyNotification = NotificationCompat.Builder(this, CHANNEL_ID)
+//                .setContentTitle("Task Timer")
+//                .setContentText("Нет активных задач")
+//                .setSmallIcon(R.drawable.ic_timer)
+//                .setPriority(NotificationCompat.PRIORITY_LOW)
+//                .build()
+//
+//            notificationManager.notify(NOTIFICATION_ID, emptyNotification)
+//        }
     }
 
 
-
     // --- Создание уведомления ---
-    private fun createNotification(taskName: String, time: String, subtaskName: String): Notification {
+    private fun createNotification(
+        taskName: String,
+        time: String,
+        subtaskName: String
+    ): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
