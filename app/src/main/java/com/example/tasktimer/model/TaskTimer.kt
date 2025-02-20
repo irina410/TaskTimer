@@ -144,7 +144,8 @@ class TaskTimer(
             .setContentText("Подзадача: $subtaskName — $time")
             .setSmallIcon(R.drawable.ic_timer)
             .setContentIntent(pendingIntent)
-            .setOngoing(true) // Уведомление нельзя скрыть
+            .setOngoing(true)// Уведомление нельзя скрыть
+            .setSilent(true)
             .build()
     }
 
