@@ -30,10 +30,10 @@ class AlarmActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.alarm_window)
+        supportActionBar?.hide()
 
         Log.d("AlarmActivity", "onCreate: Создание активности будильника")
         // Убираем заголовок TaskTimer
-        supportActionBar?.hide()
 
         Log.d("AlarmActivity", "onCreate: Создание активности будильника")
 

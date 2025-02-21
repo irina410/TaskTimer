@@ -1,63 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center"
     android:background="@color/white">
 
-    <!-- Заголовок задачи -->
+
     <TextView
         android:id="@+id/task_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:gravity="center"
+        android:paddingBottom="8dp"
         android:text="Задача #1: Название задачи (Общее время)"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:gravity="center"
-        android:paddingBottom="8dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Высокий приоритет (если есть) -->
     <TextView
         android:id="@+id/priority_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Высокий приоритет!"
-        android:textSize="18sp"
         android:textColor="@color/red"
+        android:textSize="18sp"
         android:visibility="gone"
-        android:gravity="center"
-        android:paddingBottom="8dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/completed_subtask" />
 
-    <!-- Завершённая подзадача -->
+
     <TextView
         android:id="@+id/completed_subtask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:paddingBottom="4dp"
         android:text="Завершено: Название подзадачи (00:00)"
         android:textSize="22sp"
-        android:paddingBottom="4dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/task_title" />
 
-    <!-- Следующая подзадача -->
     <TextView
         android:id="@+id/next_subtask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:paddingBottom="16dp"
         android:text="Следующее: Название следующей подзадачи"
         android:textSize="20sp"
-        android:paddingBottom="16dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/priority_text" />
 
-    <!-- Кнопка "Готово" -->
     <Button
         android:id="@+id/dismiss_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Готово"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        android:padding="12dp"
+        android:layout_margin="32dp"
         android:gravity="center"
-        android:layout_marginTop="16dp"/>
+        android:padding="12dp"
+        android:text="Готово"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/next_subtask" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

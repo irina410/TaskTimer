@@ -33,13 +33,11 @@
         <activity
             android:name=".view.AlarmActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.Dialog" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <service
             android:name=".model.TaskTimerService"
             android:foregroundServiceType="dataSync" />
 
-        <receiver android:name=".model.AlarmReceiver"
-            android:exported="false" /> <!-- Указываем, что ресивер не экспортируется -->
 
     </application>
 
