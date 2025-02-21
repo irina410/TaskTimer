@@ -43,6 +43,7 @@
         android:layout_marginTop="48dp"
         android:paddingBottom="4dp"
         android:text="Завершено: Название подзадачи (00:00)"
+        android:textColor="@color/black"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

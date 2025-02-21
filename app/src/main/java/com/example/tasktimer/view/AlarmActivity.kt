@@ -47,6 +47,8 @@ class AlarmActivity : AppCompatActivity() {
         val completedSubtask = sharedPrefs.getString("COMPLETED_SUBTASK", "Нет данных")
         val completedTime = sharedPrefs.getString("COMPLETED_TIME", "?")
         val nextSubtask = sharedPrefs.getString("NEXT_SUBTASK", null)
+        val nexttime = formatTime(sharedPrefs.getLong("NEXT_TIME", 0)*1000L)
+        val nextprior = sharedPrefs.getBoolean("NEXT_PR", false)
         val priority = sharedPrefs.getBoolean("PRIORITY", false)
 
         Log.d("AlarmActivity", "onCreate: Сообщение: $taskName, Приоритет: $priority")
@@ -66,14 +68,22 @@ class AlarmActivity : AppCompatActivity() {
 
         // Настраиваем отображение следующей подзадачи
         val nextTextView = findViewById<TextView>(R.id.next_subtask)
+        val nextPrefix = "Следующее: "
         if (nextSubtask.isNullOrEmpty() || nextSubtask == "Нет данных") {
             nextTextView.text = "Все подзадачи выполнены!"
         } else {
-            val nextPrefix = "Следующее: "
-            val nextSpannable = SpannableString("$nextPrefix$nextSubtask").apply {
-                setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val nextSpannable = SpannableString("$nextPrefix$nextSubtask (${nexttime})").apply {
+                setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length, nextPrefix.length + nextSubtask.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length + nextSubtask.length + 2, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             nextTextView.text = nextSpannable
+
+            // Если высокий приоритет, добавляем красную надпись для следующей подзадачи
+            if (nextprior) {
+                nextTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
+            } else {
+                nextTextView.setTextColor(ContextCompat.getColor(this, R.color.black)) // Или любой другой цвет по умолчанию
+            }
         }
 
         // Если высокий приоритет, добавляем красную надпись
@@ -107,7 +117,13 @@ class AlarmActivity : AppCompatActivity() {
 
 
     }
-
+    // --- Форматирование времени в HH:MM:SS ---
+    private fun formatTime(milliseconds: Long): String {
+        val hours = milliseconds / 3600000
+        val minutes = (milliseconds % 3600000) / 60000
+        val seconds = (milliseconds % 60000) / 1000
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+    }
     private fun playAlarmSound(priority: Boolean) {
         Log.d("AlarmActivity", "playAlarmSound: Воспроизведение звука будильника")
         setAlarmVolume(0)

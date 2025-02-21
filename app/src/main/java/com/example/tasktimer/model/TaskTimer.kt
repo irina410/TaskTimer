@@ -113,14 +113,17 @@ class TaskTimer(
     // --- Запуск будильника ---
     private fun triggerAlarm(currentSubtask:Subtask) {
 
+        val nextIndex = currentSubtaskIndex + 1;
         // Сохраняем данные в SharedPreferences
         val sharedPrefs = context.getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE)
         with(sharedPrefs.edit()) {
             putString("TASK_NAME", taskName)
             putString("COMPLETED_SUBTASK", currentSubtask.description)
             putString("COMPLETED_TIME", formatTime(currentSubtask.duration * 1000L))
-            putString("NEXT_SUBTASK", subtasks.getOrNull(currentSubtaskIndex + 1)?.description ?: "Все подзадачи выполнены!")
+            putString("NEXT_SUBTASK", subtasks.getOrNull(nextIndex)?.description ?: "Все подзадачи выполнены!")
+            putLong("NEXT_TIME", (subtasks.getOrNull(nextIndex)?.duration)?:0)
             putBoolean("PRIORITY", currentSubtask.isHighPriority)
+            putBoolean("NEXT_PR", subtasks.getOrNull(nextIndex)?.isHighPriority?:false)
             apply()
         }
 
