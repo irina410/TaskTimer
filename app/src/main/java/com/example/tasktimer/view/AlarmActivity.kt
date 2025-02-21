@@ -37,25 +37,30 @@ class AlarmActivity : AppCompatActivity() {
 
         Log.d("AlarmActivity", "onCreate: Создание активности будильника")
 
-        // Получение данных из Intent
-        val taskNumber = intent.getIntExtra("TASK_NUMBER", -1)
-        val taskName = intent.getStringExtra("TASK_NAME") ?: "Без названия"
-        val totalTime = intent.getStringExtra("TOTAL_TIME") ?: "Не указано"
-        val completedSubtask = intent.getStringExtra("COMPLETED_SUBTASK") ?: "Нет данных"
-        val completedTime = intent.getStringExtra("COMPLETED_TIME") ?: "?"
-        val nextSubtask = intent.getStringExtra("NEXT_SUBTASK")
-        val priority = intent.getBooleanExtra("PRIORITY", false)
+        // Получаем SharedPreferences
+        val sharedPrefs = getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE)
+
+        // Читаем данные
+        val taskNumber = sharedPrefs.getInt("TASK_NUMBER", -1)
+        val taskName = sharedPrefs.getString("TASK_NAME", "Без названия")
+        val totalTime = sharedPrefs.getString("TOTAL_TIME", "Не указано")
+        val completedSubtask = sharedPrefs.getString("COMPLETED_SUBTASK", "Нет данных")
+        val completedTime = sharedPrefs.getString("COMPLETED_TIME", "?")
+        val nextSubtask = sharedPrefs.getString("NEXT_SUBTASK", null)
+        val priority = sharedPrefs.getBoolean("PRIORITY", false)
 
         Log.d("AlarmActivity", "onCreate: Сообщение: $taskName, Приоритет: $priority")
 
         // Устанавливаем заголовок с номером и названием задачи
-        findViewById<TextView>(R.id.task_title).text = "Задача #$taskNumber: $taskName ($totalTime)"
+        findViewById<TextView>(R.id.task_title).text = "$taskNumber $taskName ($totalTime)"
 
         // Настраиваем отображение завершённой подзадачи
         val completedTextView = findViewById<TextView>(R.id.completed_subtask)
         val completedPrefix = "Завершено: "
         val completedSpannable = SpannableString("$completedPrefix$completedSubtask ($completedTime)").apply {
-            setSpan(StyleSpan(Typeface.BOLD), completedPrefix.length, completedPrefix.length + completedSubtask.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            if (completedSubtask != null) {
+                setSpan(StyleSpan(Typeface.BOLD), completedPrefix.length, completedPrefix.length + completedSubtask.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
         }
         completedTextView.text = completedSpannable
 
@@ -100,20 +105,7 @@ class AlarmActivity : AppCompatActivity() {
         playAlarmSound(priority)
         startVibration()
 
-        // Кнопка для остановки будильника
-        findViewById<View>(R.id.dismiss_button).setOnClickListener {
-            Log.d("AlarmActivity", "Кнопка 'Готово' нажата")
-            stopAlarmSound()
-            stopVibration()
 
-            // Отправляем Broadcast о завершении подзадачи
-            val intent = Intent("com.example.tasktimer.SUBTASK_COMPLETED").apply {
-                putExtra("SUBTASK_COMPLETED", true)
-            }
-            sendBroadcast(intent)
-
-            finish()
-        }
     }
 
     private fun playAlarmSound(priority: Boolean) {

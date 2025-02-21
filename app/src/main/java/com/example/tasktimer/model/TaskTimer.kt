@@ -65,7 +65,10 @@ class TaskTimer(
             }
 
             override fun onFinish() {
-                triggerAlarm(currentSubtask.isHighPriority)
+
+
+
+                triggerAlarm(currentSubtask)
                 waitForUserConfirmation()
 
                 // Обновляем главное уведомление
@@ -108,10 +111,21 @@ class TaskTimer(
     }
 
     // --- Запуск будильника ---
-    private fun triggerAlarm(isHighPriority: Boolean) {
+    private fun triggerAlarm(currentSubtask:Subtask) {
+
+        // Сохраняем данные в SharedPreferences
+        val sharedPrefs = context.getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE)
+        with(sharedPrefs.edit()) {
+            putString("TASK_NAME", taskName)
+            putString("COMPLETED_SUBTASK", currentSubtask.description)
+            putString("COMPLETED_TIME", formatTime(currentSubtask.duration * 1000L))
+            putString("NEXT_SUBTASK", subtasks.getOrNull(currentSubtaskIndex + 1)?.description ?: "Все подзадачи выполнены!")
+            putBoolean("PRIORITY", currentSubtask.isHighPriority)
+            apply()
+        }
+
+        // Запускаем AlarmActivity
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-            putExtra("ALARM_MESSAGE", "Время вышло!")
-            putExtra("priority", isHighPriority)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         context.startActivity(alarmIntent)

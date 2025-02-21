@@ -1,6 +1,7 @@
 package com.example.tasktimer.view
 
 import android.app.AlertDialog
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -64,6 +65,14 @@ class TaskAdapter(
             val serviceIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
                 putParcelableArrayListExtra("subtasks", ArrayList(task.algorithm.subtasks))
+            }
+
+            // Сохраняем данные в SharedPreferences
+            val sharedPrefs = itemView.context.getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE)
+            with(sharedPrefs.edit()) {
+                putInt("TASK_NUMBER",task.number)
+                putString("TOTAL_TIME", formatTime(task.algorithm.totalTime))
+                apply()
             }
             itemView.context.startService(serviceIntent)
         }

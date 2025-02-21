@@ -75,6 +75,7 @@ class TaskTimerService : Service() {
         val taskName = intent?.getStringExtra(EXTRA_TASK_NAME) ?: return
         val subtasks = intent.getParcelableArrayListExtra<Subtask>(EXTRA_SUBTASKS) ?: return
 
+
         // Создаем и запускаем таймер для задачи
         val taskTimer = TaskTimer(this, taskName, subtasks, notificationManager)
         activeTimers[taskName] = taskTimer
