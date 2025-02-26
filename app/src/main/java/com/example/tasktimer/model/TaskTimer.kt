@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -107,7 +108,11 @@ class TaskTimer(
         }
 
         val filter = IntentFilter("com.example.tasktimer.SUBTASK_COMPLETED")
-        context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+        } else {
+            context.registerReceiver(receiver, filter)
+        }
     }
 
     // --- Запуск будильника ---

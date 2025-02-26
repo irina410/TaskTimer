@@ -46,7 +46,11 @@ class TaskTimerService : Service() {
 
         // Регистрируем приёмник
         val filter = IntentFilter("com.example.tasktimer.UPDATE_NOTIFICATION")
-        registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(notificationReceiver, filter)
+        }
     }
 
     override fun onDestroy() {
