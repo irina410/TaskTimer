@@ -7,6 +7,7 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
@@ -38,6 +39,7 @@ class TaskAdapter(
         private val taskTime: TextView = itemView.findViewById(R.id.taskTime)
         private val startStopButton: FloatingActionButton = itemView.findViewById(R.id.startStopButton)
         private var isRunning = false
+        private val subtaskLayout: LinearLayout = itemView.findViewById(R.id.subtaskLayout)
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
             taskNumber.text = task.number.toString()
