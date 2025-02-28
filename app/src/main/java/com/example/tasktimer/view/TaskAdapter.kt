@@ -1,7 +1,6 @@
 package com.example.tasktimer.view
 
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -14,6 +13,7 @@ import com.example.tasktimer.R
 import com.example.tasktimer.model.Task
 import com.example.tasktimer.model.TaskTimerService
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+
 
 class TaskAdapter(
     private val tasks: MutableList<Task>,
@@ -42,9 +42,19 @@ class TaskAdapter(
         private val subtaskLayout: LinearLayout = itemView.findViewById(R.id.subtaskLayout)
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
+            isRunning = isTaskRunning(task)
             taskNumber.text = task.number.toString()
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
+
+            if (isRunning){
+                subtaskLayout.visibility = View.VISIBLE  // Показываем подзадачи
+                updateButtonIcon()
+            }else{
+                subtaskLayout.visibility = View.GONE  // Скрываем подзадачи
+                updateButtonIcon()
+            }
+
 
             startStopButton.setOnClickListener {
                 isRunning = !isRunning
@@ -52,8 +62,10 @@ class TaskAdapter(
 
                 if (isRunning) {
                     startTask(task)
+                    subtaskLayout.visibility = View.VISIBLE  // Показываем подзадачи
                 } else {
                     stopTask(task)
+                    subtaskLayout.visibility = View.GONE  // Скрываем подзадачи
                 }
             }
 
@@ -64,6 +76,8 @@ class TaskAdapter(
         }
 
         private fun startTask(task: Task) {
+            isRunning = true
+            saveTaskState(task, isRunning) // Сохраняем состояние
             val serviceIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
                 putParcelableArrayListExtra("subtasks", ArrayList(task.algorithm.subtasks))
@@ -80,6 +94,8 @@ class TaskAdapter(
         }
 
         private fun stopTask(task: Task) {
+            isRunning = false
+            saveTaskState(task,isRunning)
             val stopIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
                 action = TaskTimerService.ACTION_STOP_TASK
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
@@ -111,6 +127,20 @@ class TaskAdapter(
             val minutes = (seconds % 3600) / 60
             val secs = seconds % 60
             return String.format("%02d:%02d:%02d", hours, minutes, secs)
+        }
+
+        private fun isTaskRunning(task: Task): Boolean {
+            val context = itemView.context
+            return context.getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE)
+                .getBoolean("TASK_RUNNING_" + task.number, false)
+        }
+
+        private fun saveTaskState(task: Task, isRunning: Boolean) {
+            val sharedPrefs = itemView.context.getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE)
+            with(sharedPrefs.edit()) {
+                putBoolean("TASK_RUNNING_${task.number}", isRunning)
+                apply()
+            }
         }
     }
 }
