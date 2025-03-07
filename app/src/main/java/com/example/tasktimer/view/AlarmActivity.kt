@@ -86,6 +86,7 @@ class AlarmActivity : AppCompatActivity() {
             }
         }
 
+
         // Если высокий приоритет, добавляем красную надпись
         val priorityTextView = findViewById<TextView>(R.id.priority_text)
         if (priority) {

@@ -3,6 +3,7 @@ package com.example.tasktimer.view
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,8 @@ class TaskAdapter(
     private val tasks: MutableList<Task>,
     private val onTaskDelete: (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+    private var countDownTimer: CountDownTimer? = null
+    private var currentSubtaskIndex = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -40,6 +43,10 @@ class TaskAdapter(
         private val startStopButton: FloatingActionButton = itemView.findViewById(R.id.startStopButton)
         private var isRunning = false
         private val subtaskLayout: LinearLayout = itemView.findViewById(R.id.subtaskLayout)
+        private val currentSubtask: TextView = itemView.findViewById(R.id.currentSubtask)
+        private val subtaskCountdown: TextView = itemView.findViewById(R.id.subtaskCountdown)
+        private val nextSubtask: TextView = itemView.findViewById(R.id.nextSubtask)
+
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
             isRunning = isTaskRunning(task)
@@ -47,13 +54,13 @@ class TaskAdapter(
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
 
-            if (isRunning){
-                subtaskLayout.visibility = View.VISIBLE  // Показываем подзадачи
-                updateButtonIcon()
-            }else{
-                subtaskLayout.visibility = View.GONE  // Скрываем подзадачи
-                updateButtonIcon()
-            }
+//            if (isRunning){
+//                subtaskLayout.visibility = View.VISIBLE  // Показываем подзадачи
+//                updateButtonIcon()
+//            }else{
+//                subtaskLayout.visibility = View.GONE  // Скрываем подзадачи
+//                updateButtonIcon()
+//            }
 
 
             startStopButton.setOnClickListener {
@@ -77,7 +84,11 @@ class TaskAdapter(
 
         private fun startTask(task: Task) {
             isRunning = true
-            saveTaskState(task, isRunning) // Сохраняем состояние
+            saveTaskState(task, isRunning)
+            currentSubtaskIndex = 0 // начинаем с первой подзадачи
+            updateSubtaskUI(task)
+            startSubtaskTimer(task)
+
             val serviceIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
                 putParcelableArrayListExtra("subtasks", ArrayList(task.algorithm.subtasks))
@@ -86,7 +97,7 @@ class TaskAdapter(
             // Сохраняем данные в SharedPreferences
             val sharedPrefs = itemView.context.getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE)
             with(sharedPrefs.edit()) {
-                putInt("TASK_NUMBER",task.number)
+                putInt("TASK_NUMBER", task.number)
                 putString("TOTAL_TIME", formatTime(task.algorithm.totalTime))
                 apply()
             }
@@ -95,12 +106,15 @@ class TaskAdapter(
 
         private fun stopTask(task: Task) {
             isRunning = false
-            saveTaskState(task,isRunning)
+            saveTaskState(task, isRunning)
+            countDownTimer?.cancel()
             val stopIntent = Intent(itemView.context, TaskTimerService::class.java).apply {
                 action = TaskTimerService.ACTION_STOP_TASK
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
             }
             itemView.context.startService(stopIntent)
+            currentSubtaskIndex = 0 // Сбрасываем индекс подзадачи
+
         }
 
         private fun updateButtonIcon() {
@@ -142,5 +156,47 @@ class TaskAdapter(
                 apply()
             }
         }
+
+
+        private fun updateSubtaskUI(task: Task) {
+            if (task.algorithm.subtasks.isNotEmpty()) {
+                val current = task.algorithm.subtasks[currentSubtaskIndex]
+                val next = if (currentSubtaskIndex + 1 < task.algorithm.subtasks.size) {
+                    task.algorithm.subtasks[currentSubtaskIndex + 1]
+                } else {
+                    null
+                }
+
+                currentSubtask.text = "${current.description} (${current.isHighPriority})"
+                subtaskCountdown.text = "Оставшееся время: ${formatTime(current.duration)}"
+                nextSubtask.text = "Следующая подзадача: ${next?.description ?: "Нет"}"
+
+            }
+        }
+
+        private fun startSubtaskTimer(task: Task) {
+            if (task.algorithm.subtasks.isNotEmpty()) {
+                val currentSubtask = task.algorithm.subtasks[currentSubtaskIndex]
+                countDownTimer = object : CountDownTimer(currentSubtask.duration * 1000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        // Обновляем время
+                        currentSubtask.duration = millisUntilFinished / 1000
+                        updateSubtaskUI(task)
+                    }
+
+                    override fun onFinish() {
+                        // Переходим к следующей подзадаче
+                        currentSubtaskIndex++
+                        if (currentSubtaskIndex < task.algorithm.subtasks.size) {
+                            startSubtaskTimer(task)
+                        } else {
+                            // Все подзадачи завершены
+                            stopTask(task)
+                        }
+                    }
+                }.start()
+            }
+        }
+
     }
 }
