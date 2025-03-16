@@ -56,7 +56,8 @@ class TaskAdapter(
             if (currentIndex != -1 && currentIndex < subtasks.size) {
                 subtaskLayout.visibility = View.VISIBLE
                 val remaining = prefs.getLong("task_${task.number}_remaining", 0) / 1000
-                subtaskCountdown.text = "${subtasks[currentIndex].description} : ${formatTime(remaining)}"
+                val pr = if (subtasks[currentIndex].isHighPriority) "высокий приоритет" else ""
+                subtaskCountdown.text = "${subtasks[currentIndex].description} : ${formatTime(remaining)}  $pr"
 
                 // Формируем строку для следующей подзадачи
                 val nextSubtaskText = buildString {
