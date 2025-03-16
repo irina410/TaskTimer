@@ -1,6 +1,7 @@
 package com.example.tasktimer.view
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,44 +18,53 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class TaskFragment : Fragment() {
-    private val tasks = mutableListOf<Task>() // Список задач
+    private val tasks = mutableListOf<Task>()
     private lateinit var taskAdapter: TaskAdapter
+    private lateinit var prefs: SharedPreferences // Добавляем переменную
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Инициализируем prefs
+        prefs = requireContext().getSharedPreferences("TaskProgress", Context.MODE_PRIVATE)
+
         val view = inflater.inflate(R.layout.fragment_task, container, false)
         loadTasks()
 
-        // Инициализация RecyclerView
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         taskAdapter = TaskAdapter(tasks) { task -> deleteTask(task) }
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = taskAdapter
 
-        // Обработчик кнопки FAB
         view.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
-            // Получаем доступные алгоритмы
             val availableAlgorithms = AlgorithmRepository(requireContext()).loadAlgorithms()
-
             val taskCreateFragment = TaskCreateFragment(
                 onTaskCreated = { newTask ->
-                    tasks.add(newTask) // Добавляем новую задачу в список
-                    tasks.sortBy { it.number } // Сортировка по номеру задачи
-                    taskAdapter.notifyDataSetChanged() // Обновляем адаптер
+                    tasks.add(newTask)
+                    tasks.sortBy { it.number }
+                    taskAdapter.notifyDataSetChanged()
                     saveTasks()
                     Toast.makeText(requireContext(), "Задача создана!", Toast.LENGTH_SHORT).show()
                 },
                 taskList = tasks,
                 algorithms = availableAlgorithms
             )
-
-            // Показываем TaskCreateFragment как диалог
             taskCreateFragment.show(parentFragmentManager, "taskCreateDialog")
         }
 
         return view
+    }
+
+    override fun onResume() {
+        super.onResume() // Добавляем вызов super
+        prefs.registerOnSharedPreferenceChangeListener(prefsListener)
+    }
+
+    override fun onPause() {
+        super.onPause() // Добавляем вызов super
+        prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
     }
 
     private fun deleteTask(task: Task) {
@@ -66,25 +76,25 @@ class TaskFragment : Fragment() {
 
     private fun saveTasks() {
         val sharedPreferences = requireContext().getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-
-        // Преобразуем список задач в JSON-строку
-        val jsonString = Gson().toJson(tasks)
-        editor.putString("tasks", jsonString)
-        editor.apply()
+        sharedPreferences.edit().apply {
+            putString("tasks", Gson().toJson(tasks))
+            apply()
+        }
     }
 
     private fun loadTasks() {
         val sharedPreferences = requireContext().getSharedPreferences("TaskPrefs", Context.MODE_PRIVATE)
         val jsonString = sharedPreferences.getString("tasks", null)
-
         if (!jsonString.isNullOrEmpty()) {
-            val type = object : TypeToken<MutableList<Task>>() {}.type
             tasks.clear()
-            tasks.addAll(Gson().fromJson(jsonString, type))
-            tasks.sortBy { it.number } // Сортировка по номеру задачи
-
+            tasks.addAll(Gson().fromJson(jsonString, object : TypeToken<MutableList<Task>>() {}.type))
+            tasks.sortBy { it.number }
         }
     }
 
+    private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key?.startsWith("task_") == true) {
+            taskAdapter.notifyDataSetChanged()
+        }
+    }
 }

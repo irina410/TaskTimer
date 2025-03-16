@@ -10,74 +10,86 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/taskNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="№"
-        android:layout_weight="1"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_margin="8dp"
-        android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/taskNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:text="№"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/taskName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Название алгоритма"
-        android:textSize="16sp"
-        android:layout_weight="1"
-        android:layout_margin="8dp"
-        android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/taskName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:text="Название алгоритма"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/taskTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="00:00:00"
-        android:textSize="14sp"
-        android:layout_weight="1"
-        android:layout_margin="8dp"
-        android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/taskTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:text="00:00:00"
+            android:textSize="14sp" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/startStopButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="8dp"
-        android:contentDescription="go Task"
-        android:src="@android:drawable/ic_media_play"
-        app:backgroundTint="#FCF5FD"
-        app:elevation="0dp"/>
-</LinearLayout>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/startStopButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:contentDescription="go Task"
+            android:src="@android:drawable/ic_media_play"
+            app:backgroundTint="#FCF5FD"
+            app:elevation="0dp" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/subtaskLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone"
-        android:paddingTop="8dp">
+        android:paddingTop="8dp"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/subtaskCountdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Оставшееся время: 00:00:00"
-            android:textSize="14sp"
+            android:layout_marginBottom="4dp"
             android:gravity="center"
+            android:text="Оставшееся время: 00:00:00"
             android:textColor="#FF0000"
-            android:layout_marginBottom="4dp" />
+            android:textSize="14sp" />
+
 
         <TextView
             android:id="@+id/currentSubtask"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Текущая подзадача: Название подзадачи"
-            android:textSize="14sp"
             android:gravity="center"
-            android:textColor="#000000" />
+            android:text="Текущая подзадача: Название подзадачи"
+            android:textColor="#000000"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/nextSubtask"
+            android:text="Следующая: ..."
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#000000"
+            android:textSize="14sp" />
+
     </LinearLayout>
 
 </LinearLayout>

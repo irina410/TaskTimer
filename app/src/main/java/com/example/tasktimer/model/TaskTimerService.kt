@@ -17,18 +17,16 @@ import androidx.core.app.NotificationCompat
 import com.example.tasktimer.MainActivity
 import com.example.tasktimer.R
 
-/**
- * Сервис для управления таймерами задач.
- */
 class TaskTimerService : Service() {
-
     companion object {
+        const val EXTRA_TASK_NUMBER = "task_number" // Добавляем константу
         const val CHANNEL_ID = "task_timer_channel"
         const val NOTIFICATION_ID = 1
         const val EXTRA_TASK_NAME = "task_name"
         const val EXTRA_SUBTASKS = "subtasks"
         const val ACTION_STOP_TASK = "STOP_TASK"
     }
+
 
     private val activeTimers = mutableMapOf<String, TaskTimer>() // Активные таймеры задач
     private val notificationManager by lazy {
@@ -69,40 +67,53 @@ class TaskTimerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-//    override fun onDestroy() {
-//        activeTimers.values.forEach { it.stop() } // Останавливаем все таймеры при уничтожении сервиса
-//        super.onDestroy()
-//    }
 
     // --- Логика запуска задачи ---
     private fun startTask(intent: Intent?) {
+        val taskNumber = intent?.getIntExtra(EXTRA_TASK_NUMBER, -1) ?: -1 // Получаем номер
         val taskName = intent?.getStringExtra(EXTRA_TASK_NAME) ?: return
         val subtasks = intent.getParcelableArrayListExtra<Subtask>(EXTRA_SUBTASKS) ?: return
 
+        // Исправленный вызов конструктора TaskTimer
+        val taskTimer = TaskTimer(
+            taskNumber = taskNumber,
+            context = this,
+            taskName = taskName,
+            subtasks = subtasks,
+            notificationManager = notificationManager
+        )
 
-        // Создаем и запускаем таймер для задачи
-        val taskTimer = TaskTimer(this, taskName, subtasks, notificationManager)
         activeTimers[taskName] = taskTimer
         taskTimer.start()
-
-        // Запускаем сервис в foreground с тихим уведомлением
         startForeground(NOTIFICATION_ID, createSilentNotification())
     }
 
-    // --- Логика остановки задачи ---
     private fun stopTask(intent: Intent) {
         val taskName = intent.getStringExtra(EXTRA_TASK_NAME) ?: return
+        val taskNumber = intent.getIntExtra(EXTRA_TASK_NUMBER, -1)
+
         activeTimers[taskName]?.stop()
         activeTimers.remove(taskName)
-        stopSelfIfNoTasks() // Останавливаем сервис, если задач больше нет
-    }
 
+        // Очистка данных прогресса
+        if (taskNumber != -1) {
+            getSharedPreferences("TaskProgress", Context.MODE_PRIVATE).edit().apply {
+                remove("task_${taskNumber}_current")
+                remove("task_${taskNumber}_remaining")
+                remove("task_${taskNumber}_next_desc")
+                apply()
+            }
+        }
+
+        stopSelfIfNoTasks()
+    }
     // --- Остановка сервиса, если нет активных задач ---
     private fun stopSelfIfNoTasks() {
         if (activeTimers.isEmpty()) {
             stopSelf()
         }
     }
+
 
     // --- Создание канала уведомлений ---
     private fun createNotificationChannel() {
@@ -138,22 +149,11 @@ class TaskTimerService : Service() {
         if (nextTask != null) {
             val notification = createNotification(
                 nextTask.taskName(),
-                nextTask.formatTime(),
+                nextTask.formatTime(nextTask.remainingTime()),
                 nextTask.currentSubtaskName()
             )
             startForeground(NOTIFICATION_ID, notification) // Снова делаем сервис foreground
         }
-        //        else {
-//            // НЕ ОСТАНАВЛИВАЕМ сервис, просто обновляем уведомление на "нет активных задач"
-//            val emptyNotification = NotificationCompat.Builder(this, CHANNEL_ID)
-//                .setContentTitle("Task Timer")
-//                .setContentText("Нет активных задач")
-//                .setSmallIcon(R.drawable.ic_timer)
-//                .setPriority(NotificationCompat.PRIORITY_LOW)
-//                .build()
-//
-//            notificationManager.notify(NOTIFICATION_ID, emptyNotification)
-//        }
     }
 
 
