@@ -38,7 +38,6 @@ class TaskAdapter(
         private val startStopButton: FloatingActionButton = itemView.findViewById(R.id.startStopButton)
         private val subtaskLayout: ViewGroup = itemView.findViewById(R.id.subtaskLayout)
         private val subtaskCountdown: TextView = itemView.findViewById(R.id.subtaskCountdown)
-        private val currentSubtask: TextView = itemView.findViewById(R.id.currentSubtask)
         private val nextSubtask: TextView = itemView.findViewById(R.id.nextSubtask)
         private var isRunning = false
         private val context: Context = itemView.context // Получаем контекст
@@ -57,16 +56,32 @@ class TaskAdapter(
             if (currentIndex != -1 && currentIndex < subtasks.size) {
                 subtaskLayout.visibility = View.VISIBLE
                 val remaining = prefs.getLong("task_${task.number}_remaining", 0) / 1000
-                subtaskCountdown.text = "Осталось: ${formatTime(remaining)}"
-                currentSubtask.text = "Текущая: ${subtasks[currentIndex].description}"
+                subtaskCountdown.text = "${subtasks[currentIndex].description} : ${formatTime(remaining)}"
 
-                // Получаем следующую подзадачу
-                val nextSubtaskDesc = prefs.getString(
-                    "task_${task.number}_next_desc",
-                    if (currentIndex + 1 < subtasks.size) subtasks[currentIndex + 1].description
-                    else "Завершено"
-                )
-                nextSubtask.text = "Следующая: $nextSubtaskDesc"
+                // Формируем строку для следующей подзадачи
+                val nextSubtaskText = buildString {
+                    val nextIndex = currentIndex + 1
+
+                    // Проверяем существование следующей подзадачи
+                    if (nextIndex < subtasks.size) {
+                        // Берем данные из SharedPreferences или из списка подзадач
+                        val nextDesc = prefs.getString("task_${task.number}_next_desc", null)
+                            ?: subtasks[nextIndex].description
+
+                        val nextDuration = prefs.getLong("task_${task.number}_next_time", 0)
+                            .takeIf { it > 0 }
+                            ?: subtasks[nextIndex].duration
+
+                        val nextPriority = subtasks[currentIndex+1].isHighPriority
+
+                        append("Следующая: $nextDesc (${formatTime(nextDuration)})")
+                        if (nextPriority) append(" высоки приоритет ")
+                    } else {
+                        append("Последняя подзадача")
+                    }
+                }
+
+                nextSubtask.text = nextSubtaskText
             } else {
                 subtaskLayout.visibility = View.GONE
             }

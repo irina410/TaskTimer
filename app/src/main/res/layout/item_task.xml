@@ -66,27 +66,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:gravity="center"
+            android:gravity="left"
             android:text="Оставшееся время: 00:00:00"
             android:textColor="#FF0000"
             android:textSize="14sp" />
 
 
         <TextView
-            android:id="@+id/currentSubtask"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Текущая подзадача: Название подзадачи"
-            android:textColor="#000000"
-            android:textSize="14sp" />
-
-        <TextView
             android:id="@+id/nextSubtask"
             android:text="Следующая: ..."
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:gravity="left"
             android:textColor="#000000"
             android:textSize="14sp" />
 
