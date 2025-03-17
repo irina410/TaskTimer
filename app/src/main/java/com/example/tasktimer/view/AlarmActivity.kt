@@ -132,15 +132,15 @@ class AlarmActivity : AppCompatActivity() {
     }
     private fun playAlarmSound(priority: Boolean) {
         Log.d("AlarmActivity", "playAlarmSound: Воспроизведение звука будильника")
-        setAlarmVolume(0)
+        setAlarmVolume(2)
         val ringtoneResId = when (priority) {
             false -> {
                 Log.d("AlarmActivity", "playAlarmSound: Using basic_alarm_ringtone $priority")
-                //R.raw.basic_alarm_ringtone
+                R.raw.basic_alarm_ringtone
             }
             true -> {
                 Log.d("AlarmActivity", "playAlarmSound: Using electronic_alarm_signal $priority")
-                //R.raw.electronic_alarm_signal
+                R.raw.electronic_alarm_signal
             }
         }
 
