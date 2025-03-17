@@ -121,6 +121,10 @@ class TaskTimer(
             putString("COMPLETED_SUBTASK", currentSubtask.description)
             putString("COMPLETED_TIME", formatTime(currentSubtask.duration * 1000L))
             putString("NEXT_SUBTASK", subtasks.getOrNull(nextIndex)?.description ?: "Все подзадачи выполнены!")
+            putBoolean("PRIORITY", currentSubtask.isHighPriority)
+            putBoolean("NEXT_PR", subtasks.getOrNull(nextIndex)?.isHighPriority ?: false)
+            putLong("NEXT_TIME", subtasks.getOrNull(nextIndex)?.duration ?: 0)
+
             apply()
         }
 

@@ -64,6 +64,7 @@ class AlarmActivity : AppCompatActivity() {
                 setSpan(StyleSpan(Typeface.BOLD), completedPrefix.length, completedPrefix.length + completedSubtask.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
+
         completedTextView.text = completedSpannable
 
         // Настраиваем отображение следующей подзадачи
@@ -72,9 +73,12 @@ class AlarmActivity : AppCompatActivity() {
         if (nextSubtask.isNullOrEmpty() || nextSubtask == "Нет данных") {
             nextTextView.text = "Все подзадачи выполнены!"
         } else {
-            val nextSpannable = SpannableString("$nextPrefix$nextSubtask (${nexttime})").apply {
+            val nextTimeText = if (nexttime == "00:00:00") "" else " ($nexttime)"
+            val nextSpannable = SpannableString("$nextPrefix$nextSubtask$nextTimeText").apply {
                 setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length, nextPrefix.length + nextSubtask.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length + nextSubtask.length + 2, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (nextTimeText.isNotEmpty()) {
+                    setSpan(StyleSpan(Typeface.BOLD), nextPrefix.length + nextSubtask.length, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
             }
             nextTextView.text = nextSpannable
 
@@ -95,6 +99,8 @@ class AlarmActivity : AppCompatActivity() {
         } else {
             priorityTextView.visibility = View.GONE
         }
+
+
         // Настраиваем кнопку "Готово"
         val dismissButton = findViewById<Button>(R.id.dismiss_button)
         dismissButton.setOnClickListener {
