@@ -74,6 +74,8 @@ class TaskAdapter(
             val currentIndex = prefs.getInt("task_${task.number}_current", -1)
 
             if (currentIndex != -1 && currentIndex < subtasks.size) {
+                isRunning = true
+                updateButtonIcon()
                 subtaskLayout.visibility = View.VISIBLE
                 val remaining = prefs.getLong("task_${task.number}_remaining", 0) / 1000
                 val pr = if (subtasks[currentIndex].isHighPriority) "высокий приоритет" else ""
