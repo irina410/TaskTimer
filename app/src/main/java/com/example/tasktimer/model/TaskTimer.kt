@@ -41,6 +41,9 @@ class TaskTimer(
         if (currentSubtaskIndex >= subtasks.size) {
             Log.d("TaskTimer", "Все подзадачи завершены")
             showCompletionNotification()
+            context.sendBroadcast(Intent("com.example.tasktimer.TASK_COMPLETED").apply {
+                putExtra("TASK_NUMBER", taskNumber)
+            })
             return
         }
         isRunning = true

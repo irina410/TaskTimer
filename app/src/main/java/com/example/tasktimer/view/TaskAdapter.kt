@@ -1,12 +1,13 @@
-package com.example.tasktimer.view
-
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
 import com.example.tasktimer.model.Task
@@ -42,7 +43,26 @@ class TaskAdapter(
         private var isRunning = false
         private val context: Context = itemView.context // Получаем контекст
 
+        private val taskCompletionReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val completedTaskNumber = intent?.getIntExtra("TASK_NUMBER", -1)
+                if (completedTaskNumber == taskNumber.text.toString().toInt()) {
+                    subtaskLayout.visibility = View.GONE
+                    startStopButton.setImageResource(android.R.drawable.ic_media_play)
+                }
+            }
+        }
+
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
+            // Регистрируем ресивер
+            val filter = IntentFilter("com.example.tasktimer.TASK_COMPLETED")
+            ContextCompat.registerReceiver(
+                context,
+                taskCompletionReceiver,
+                filter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+
             taskNumber.text = task.number.toString()
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
@@ -73,7 +93,7 @@ class TaskAdapter(
                             .takeIf { it > 0 }
                             ?: subtasks[nextIndex].duration
 
-                        val nextPriority = subtasks[currentIndex+1].isHighPriority
+                        val nextPriority = subtasks[currentIndex + 1].isHighPriority
 
                         append("Следующая: $nextDesc (${formatTime(nextDuration)})")
                         if (nextPriority) append(" высоки приоритет ")
@@ -151,7 +171,5 @@ class TaskAdapter(
                 .setNegativeButton("Отмена", null)
                 .show()
         }
-
-
     }
 }
