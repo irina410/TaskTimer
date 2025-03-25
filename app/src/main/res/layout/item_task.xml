@@ -37,6 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="8dp"
+            android:textColor="@color/primary_text"
             android:layout_weight="1"
             android:text="00:00:00"
             android:textSize="14sp" />
@@ -49,8 +50,8 @@
             android:layout_margin="8dp"
             android:contentDescription="go Task"
             android:src="@android:drawable/ic_media_play"
-            app:backgroundTint="#FCF5FD"
-            app:elevation="0dp" />
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/primary_text"            app:elevation="0dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -67,8 +68,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:gravity="left"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/primary_text"
             android:text="Оставшееся время: 00:00:00"
-            android:textColor="#FF0000"
             android:textSize="14sp" />
 
 
@@ -78,7 +80,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="left"
-            android:textColor="#000000"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/primary_text"
             android:textSize="14sp" />
 
     </LinearLayout>

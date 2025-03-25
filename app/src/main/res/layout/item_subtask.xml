@@ -17,6 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:autofillHints="name"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/primary_text"
         android:hint="Название подзадачи"
         android:imeOptions="actionNext"
         android:inputType="text"
@@ -31,7 +33,7 @@
         android:contentDescription="Удалить подзадачу"
         android:padding="6dp"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
-        app:tint="@color/black"
+        app:tint="@color/primary_text"
         tools:ignore="TouchTargetSizeCheck" />
 </LinearLayout>
 
@@ -48,6 +50,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/selectedAlgorithmResV"
         android:layout_marginTop="8dp"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/primary_text"
         android:minHeight="48dp"
         android:text="Обычная приоритетность"
         android:layout_marginRight="8dp"/>
@@ -58,6 +62,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/primary_text"
         android:hint="00:00:00"
         android:inputType="time"
         android:minHeight="48dp"

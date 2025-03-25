@@ -11,13 +11,12 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#B39DDB"
-            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light">
+            android:background="@color/primary">
 
             <!-- Центрируем текст вручную -->
             <TextView
@@ -26,17 +25,16 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="brusket"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:textSize="20sp" />
+                android:textColor="@color/primary_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
         </androidx.appcompat.widget.Toolbar>
-
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabIndicatorColor="@color/black" />
+            app:tabIndicatorColor="@color/primary_text" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.viewpager2.widget.ViewPager2

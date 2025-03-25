@@ -82,11 +82,13 @@ class AlarmActivity : AppCompatActivity() {
             }
             nextTextView.text = nextSpannable
 
+
+
             // Если высокий приоритет, добавляем красную надпись для следующей подзадачи
             if (nextprior) {
                 nextTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
             } else {
-                nextTextView.setTextColor(ContextCompat.getColor(this, R.color.black)) // Или любой другой цвет по умолчанию
+                nextTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_text)) // Или любой другой цвет по умолчанию
             }
         }
 
