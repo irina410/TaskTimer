@@ -9,6 +9,6 @@ data class Algorithm(
     fun recalculateTotalTime() {
         totalTime = subtasks.sumOf { it.duration }
     }
-    fun copy() = Algorithm(name, subtasks.toList())
+    fun copy() = Algorithm(name, subtasks.toList(), totalTime)
 }
 
