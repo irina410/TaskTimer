@@ -3,7 +3,7 @@ package com.example.tasktimer.model
 
 data class Task(
     val number: Int,  // Уникальный номер задачи
-    val algorithm: Algorithm,  // Алгоритм, с которым связана задача
+    var algorithm: Algorithm,  // Алгоритм, с которым связана задача
 
     var isRunning: Boolean = false  // Статус выполнения задачи (запущена или нет)
 ) {

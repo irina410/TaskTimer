@@ -1,13 +1,17 @@
 package com.example.tasktimer.view
 
 import TaskAdapter
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,7 +26,27 @@ class TaskFragment : Fragment() {
     private val tasks = mutableListOf<Task>()
     private lateinit var taskAdapter: TaskAdapter
     private lateinit var prefs: SharedPreferences // Добавляем переменную
+    private val algorithmUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == "ALGORITHM_UPDATED") {
+                val algorithmName = intent.getStringExtra("algorithm_id")
+                updateTasksWithNewAlgorithm(algorithmName)
+            }
+        }
+    }
+    override fun onStart() {
+        super.onStart()
+        // Регистрируем ресивер для обновлений алгоритмов
+        val filter = IntentFilter("ALGORITHM_UPDATED")
+        ContextCompat.registerReceiver(
+            requireContext(),
+            algorithmUpdateReceiver,
+            filter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
 
+        prefs.registerOnSharedPreferenceChangeListener(prefsListener)
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -67,7 +91,31 @@ class TaskFragment : Fragment() {
         super.onPause() // Добавляем вызов super
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
     }
+    override fun onStop() {
+        super.onStop()
+        // Отменяем регистрацию ресивера
+        requireContext().unregisterReceiver(algorithmUpdateReceiver)
 
+        prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
+    }
+    private fun updateTasksWithNewAlgorithm(algorithmName: String?) {
+        algorithmName ?: return
+
+        val repository = AlgorithmRepository(requireContext())
+        val updatedAlgorithm = repository.loadAlgorithms().find { it.name == algorithmName }
+
+        updatedAlgorithm?.let { algo ->
+            // Обновляем все задачи с этим алгоритмом
+            tasks.forEach { task ->
+                if (task.algorithm.name == algorithmName) {
+                    task.algorithm = algo.copy() // Используем копию чтобы не нарушить ссылки
+                }
+            }
+
+            saveTasks()
+            taskAdapter.notifyDataSetChanged()
+        }
+    }
     private fun deleteTask(task: Task) {
         tasks.remove(task)
         taskAdapter.notifyDataSetChanged()

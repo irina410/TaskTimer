@@ -1,5 +1,6 @@
 package com.example.tasktimer.view
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -96,8 +97,13 @@ class AlgorithmEditDialogFragment(
 
             // Если алгоритм редактируется, удаляем старую версию
             algorithm?.let { onDelete(it) }
-
+            // Отправляем броадкаст для обновления списка задач
+            val intent = Intent("ALGORITHM_UPDATED").apply {
+                putExtra("algorithm_id", updatedAlgorithm.name) // Передаём ID, если нужно
+            }
+            requireContext().sendBroadcast(intent)
             onSave(updatedAlgorithm)
+
             dismiss()
         }
 
