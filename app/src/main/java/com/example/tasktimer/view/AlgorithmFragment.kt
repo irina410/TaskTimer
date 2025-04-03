@@ -27,18 +27,14 @@ class AlgorithmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Создаём ViewModel с репозиторием
         val repository = AlgorithmRepository(requireContext())
         viewModel = AlgorithmViewModel(repository)
 
-        // Загружаем данные
         viewModel.loadAlgorithms()
 
-        // Настраиваем RecyclerView
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Передаём список и обработчик в адаптер
         adapter = AlgorithmAdapter(viewModel.algorithms) { selectedAlgorithm ->
             AlgorithmEditDialogFragment(
                 algorithm = selectedAlgorithm,
@@ -57,10 +53,8 @@ class AlgorithmFragment : Fragment() {
 
         recyclerView.adapter = adapter
 
-        // Передаём данные в адаптер
         adapter.submitList(viewModel.algorithms)
 
-        // Обработка клика по кнопке добавления
         view.findViewById<View>(R.id.fab).setOnClickListener {
             AlgorithmCreateDialogFragment(null) { newAlgorithm ->
                 newAlgorithm.recalculateTotalTime()

@@ -1,7 +1,6 @@
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tasktimer.R
@@ -12,14 +11,14 @@ class AlgorithmExpandableAdapter(
     private val onAlgorithmSelected: (Algorithm) -> Unit
 ) : RecyclerView.Adapter<AlgorithmExpandableAdapter.AlgorithmViewHolder>() {
 
-    // Метод для обновления данных
     fun updateData(newList: List<Algorithm>) {
         algorithmList = newList
-        notifyDataSetChanged() // Обновляем адаптер
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlgorithmViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_algorithm, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_algorithm, parent, false)
         return AlgorithmViewHolder(view)
     }
 

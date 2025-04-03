@@ -21,17 +21,17 @@ import com.example.tasktimer.model.Algorithm
 
 class TaskCreateFragment(
     private val onTaskCreated: (Task) -> Unit,
-    private val taskList: List<Task>, // Список существующих задач
-    private val algorithms: List<Algorithm> // Список доступных алгоритмов
+    private val taskList: List<Task>,
+    private val algorithms: List<Algorithm>
 ) : DialogFragment() {
 
     private lateinit var taskNumberEditText: EditText
     private lateinit var algorithmRecyclerView: RecyclerView
     private lateinit var selectedAlgorithmRecyclerView: RecyclerView
-    private lateinit var switchHighPriority: Switch // Ссылка на Switch
+    private lateinit var switchHighPriority: Switch
 
-    private lateinit var selectedAlgorithmAdapter: AlgorithmExpandableAdapter // Адаптер для выбранных алгоритмов
-    private var selectedAlgorithm: Algorithm? = null // Выбранный алгоритм
+    private lateinit var selectedAlgorithmAdapter: AlgorithmExpandableAdapter
+    private var selectedAlgorithm: Algorithm? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,23 +44,19 @@ class TaskCreateFragment(
         algorithmRecyclerView = view.findViewById(R.id.algorithmRecyclerView)
         selectedAlgorithmRecyclerView = view.findViewById(R.id.selectedAlgorithmResV)
 
-        // Устанавливаем адаптер для RecyclerView (для отображения доступных алгоритмов)
         val algorithmAdapter = AlgorithmAdapter(algorithms) { algorithm ->
             onAlgorithmSelected(algorithm)
         }
         algorithmRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         algorithmRecyclerView.adapter = algorithmAdapter
 
-        // Настроим RecyclerView для выбранных алгоритмов
         selectedAlgorithmRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         selectedAlgorithmAdapter = AlgorithmExpandableAdapter(emptyList()) { }
         selectedAlgorithmRecyclerView.adapter = selectedAlgorithmAdapter
 
-        // Кнопка закрытия
         view.findViewById<View>(R.id.closeButton).setOnClickListener {
             dismiss()
         }
-        // Кнопка сохранения
         view.findViewById<View>(R.id.saveButton).setOnClickListener {
             val taskNumber = taskNumberEditText.text.toString().trim()
             if (TextUtils.isEmpty(taskNumber)) {
@@ -82,10 +78,9 @@ class TaskCreateFragment(
     private fun onAlgorithmSelected(algorithm: Algorithm) {
         selectedAlgorithm = algorithm
 
-        // Переместить выбранный алгоритм в RecyclerView
         selectedAlgorithmRecyclerView.visibility = View.VISIBLE
         val updatedList = listOf(algorithm)
-        selectedAlgorithmAdapter.updateData(updatedList) // Обновляем адаптер с выбранным алгоритмом
+        selectedAlgorithmAdapter.updateData(updatedList)
     }
 
     private fun isTaskNumberUnique(taskNumber: Int): Boolean {

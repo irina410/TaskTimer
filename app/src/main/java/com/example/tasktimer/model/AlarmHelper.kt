@@ -11,7 +11,6 @@ class AlarmHelper(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    // Метод для создания PendingIntent
     private fun getAlarmActionPendingIntent(requestCode: Int, message: String): PendingIntent {
         val intent = Intent(context, AlarmActivity::class.java).apply {
             putExtra("ALARM_MESSAGE", message)

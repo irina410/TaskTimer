@@ -32,15 +32,9 @@ class AlarmActivity : AppCompatActivity() {
         setContentView(R.layout.alarm_window)
         supportActionBar?.hide()
 
-        Log.d("AlarmActivity", "onCreate: Создание активности будильника")
-        // Убираем заголовок TaskTimer
 
-        Log.d("AlarmActivity", "onCreate: Создание активности будильника")
-
-        // Получаем SharedPreferences
         val sharedPrefs = getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE)
 
-        // Читаем данные
         val taskNumber = sharedPrefs.getInt("TASK_NUMBER", -1)
         val taskName = sharedPrefs.getString("TASK_NAME", "Без названия")
         val totalTime = sharedPrefs.getString("TOTAL_TIME", "Не указано")
@@ -51,12 +45,10 @@ class AlarmActivity : AppCompatActivity() {
         val nextprior = sharedPrefs.getBoolean("NEXT_PR", false)
         val priority = sharedPrefs.getBoolean("PRIORITY", false)
 
-        Log.d("AlarmActivity", "onCreate: Сообщение: $taskName, Приоритет: $priority")
 
-        // Устанавливаем заголовок с номером и названием задачи
         findViewById<TextView>(R.id.task_title).text = "$taskNumber $taskName ($totalTime)"
 
-        // Настраиваем отображение завершённой подзадачи
+
         val completedTextView = findViewById<TextView>(R.id.completed_subtask)
         val completedPrefix = "Завершено: "
         val completedSpannable = SpannableString("$completedPrefix$completedSubtask ($completedTime)").apply {
@@ -67,7 +59,7 @@ class AlarmActivity : AppCompatActivity() {
 
         completedTextView.text = completedSpannable
 
-        // Настраиваем отображение следующей подзадачи
+
         val nextTextView = findViewById<TextView>(R.id.next_subtask)
         val nextPrefix = "Следующее: "
         if (nextSubtask.isNullOrEmpty() || nextSubtask == "Нет данных") {
@@ -84,15 +76,13 @@ class AlarmActivity : AppCompatActivity() {
 
 
 
-            // Если высокий приоритет, добавляем красную надпись для следующей подзадачи
             if (nextprior) {
                 nextTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
             } else {
-                nextTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_text)) // Или любой другой цвет по умолчанию
+                nextTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_text))
             }
         }
 
-        // Если высокий приоритет, добавляем красную надпись
         val priorityTextView = findViewById<TextView>(R.id.priority_text)
         if (priority) {
             priorityTextView.text = "Высокий приоритет!"
@@ -103,14 +93,11 @@ class AlarmActivity : AppCompatActivity() {
         }
 
 
-        // Настраиваем кнопку "Готово"
         val dismissButton = findViewById<Button>(R.id.dismiss_button)
         dismissButton.setOnClickListener {
-            Log.d("AlarmActivity", "Кнопка 'Готово' нажата")
             stopAlarmSound()
             stopVibration()
 
-            // Отправляем Broadcast о завершении подзадачи
             val intent = Intent("com.example.tasktimer.SUBTASK_COMPLETED").apply {
                 putExtra("SUBTASK_COMPLETED", true)
             }
@@ -119,13 +106,11 @@ class AlarmActivity : AppCompatActivity() {
             finish()
         }
 
-        // Настройка звука и вибрации
         playAlarmSound(priority)
         startVibration()
 
 
     }
-    // --- Форматирование времени в HH:MM:SS ---
     private fun formatTime(milliseconds: Long): String {
         val hours = milliseconds / 3600000
         val minutes = (milliseconds % 3600000) / 60000
@@ -133,15 +118,12 @@ class AlarmActivity : AppCompatActivity() {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds)
     }
     private fun playAlarmSound(priority: Boolean) {
-        Log.d("AlarmActivity", "playAlarmSound: Воспроизведение звука будильника")
         setAlarmVolume(2)
         val ringtoneResId = when (priority) {
             false -> {
-                Log.d("AlarmActivity", "playAlarmSound: Using basic_alarm_ringtone $priority")
                 R.raw.basic_alarm_ringtone
             }
             true -> {
-                Log.d("AlarmActivity", "playAlarmSound: Using electronic_alarm_signal $priority")
                 R.raw.electronic_alarm_signal
             }
         }
@@ -161,7 +143,6 @@ class AlarmActivity : AppCompatActivity() {
                 prepare()
                 start()
             }
-            Log.d("AlarmActivity", "playAlarmSound: Звук будильника начал воспроизводиться")
         } catch (e: Exception) {
             Log.e("AlarmActivity", "playAlarmSound: Ошибка при воспроизведении звука: ${e.message}")
         }
@@ -170,41 +151,33 @@ class AlarmActivity : AppCompatActivity() {
     private fun setAlarmVolume(volumeLevel: Int) {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        // Получаем максимальную громкость для потока будильника
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
 
-        // Проверяем, что уровень громкости находится в допустимых пределах
         val safeVolumeLevel = volumeLevel.coerceIn(0, maxVolume)
 
-        // Устанавливаем громкость
         audioManager.setStreamVolume(AudioManager.STREAM_ALARM, safeVolumeLevel, 0)
 
-        Log.d("AlarmActivity", "setAlarmVolume: Громкость будильника установлена на $safeVolumeLevel из $maxVolume")
     }
 
     @SuppressLint("MissingPermission", "NewApi")
     private fun startVibration() {
-        Log.d("AlarmActivity", "startVibration: Включение вибрации")
 
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         val vibrationEffect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            VibrationEffect.createWaveform(longArrayOf(0, 500, 500), 0) // Вибрация с паузой
+            VibrationEffect.createWaveform(longArrayOf(0, 500, 500), 0)
         } else {
             null
         }
 
         if (vibrationEffect != null) {
             vibrator?.vibrate(vibrationEffect)
-            Log.d("AlarmActivity", "startVibration: Вибрация с эффектом для новых устройств")
         } else {
-            vibrator?.vibrate(longArrayOf(0, 500, 500), 0) // Для старых устройств
-            Log.d("AlarmActivity", "startVibration: Вибрация для старых устройств")
+            vibrator?.vibrate(longArrayOf(0, 500, 500), 0)
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun stopVibration() {
-        Log.d("AlarmActivity", "stopVibration: Остановка вибрации")
         vibrator?.cancel()
     }
 
@@ -218,13 +191,11 @@ class AlarmActivity : AppCompatActivity() {
             }
             mediaPlayer = null
         } catch (e: IllegalStateException) {
-            Log.e("AlarmActivity", "Error stopping alarm sound: ${e.message}")
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("AlarmActivity", "onDestroy: Активность уничтожена")
         stopAlarmSound()
         stopVibration()
     }

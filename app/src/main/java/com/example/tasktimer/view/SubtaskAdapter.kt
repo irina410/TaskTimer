@@ -13,8 +13,8 @@ import com.example.tasktimer.model.Subtask
 
 class SubtaskAdapter(
     private val subtasks: MutableList<Subtask>,
-    private val onSubtaskUpdated: () -> Unit, // Колбэк для обновления общего времени
-    private val onSubtaskDeleted: (Int) -> Unit // Колбэк для удаления подзадачи
+    private val onSubtaskUpdated: () -> Unit,
+    private val onSubtaskDeleted: (Int) -> Unit
 ) : RecyclerView.Adapter<SubtaskAdapter.SubtaskViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubtaskViewHolder {
@@ -57,21 +57,18 @@ class SubtaskAdapter(
             nameEditText.setText(subtask.description)
             durationEditText.setText(if (subtask.duration == 0L) "" else formatSecondsToTime(subtask.duration))
 
-            // Слушатель изменения текста названия
             nameEditText.setOnFocusChangeListener { _, _ ->
                 subtask.description = nameEditText.text.toString()
                 onSubtaskUpdated()
             }
 
-            // Устанавливаем начальное состояние переключателя
             prioritySwitch.isChecked = subtask.isHighPriority
             updateSwitchText(subtask.isHighPriority)
 
-            // Слушатель изменения состояния переключателя
             prioritySwitch.setOnCheckedChangeListener { _, isChecked ->
                 subtask.isHighPriority = isChecked
                 updateSwitchText(isChecked)
-                onSubtaskUpdated() // Сообщаем об изменении
+                onSubtaskUpdated()
             }
 
             durationEditText.setOnFocusChangeListener { _, hasFocus ->
@@ -92,7 +89,6 @@ class SubtaskAdapter(
             }
         }
 
-        // Обновление текста переключателя
         private fun updateSwitchText(isHighPriority: Boolean) {
             prioritySwitch.text = if (isHighPriority) {
                 "Высокая приоритетность"

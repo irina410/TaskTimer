@@ -42,18 +42,19 @@ class MainActivity : AppCompatActivity() {
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:${context.packageName}")
+            )
             startActivity(intent)
         }
 
 
-        // Устанавливаем адаптер для ViewPager2
         viewPager.adapter = MainPagerAdapter(this)
 
-        // Связываем TabLayout с ViewPager2
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "Задачи" // Название вкладки
+                0 -> "Задачи"
                 1 -> "Алгоритмы"
                 else -> throw IllegalStateException("Unexpected position: $position")
             }
@@ -69,23 +70,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun hideSystemUI() {
         window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION     // Скрыть панель навигации
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN       // Скрыть статус-бар
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // Постоянно скрывать, но выдвигать при свайпе
-                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE    // Стабильный макет
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION // Контент за панелью навигации
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN // Контент за статус-баром
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 )
     }
 }
+
 class MainPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
 
-    override fun getItemCount(): Int = 2 // У нас 2 вкладки: Задачи и Алгоритмы
+    override fun getItemCount(): Int = 2
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> TaskFragment() // Возвращаем фрагмент для задач
-            1 -> AlgorithmFragment() // Возвращаем фрагмент для алгоритмов
+            0 -> TaskFragment()
+            1 -> AlgorithmFragment()
             else -> throw IllegalStateException("Unexpected position: $position")
         }
     }

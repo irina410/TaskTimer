@@ -39,7 +39,6 @@ class TaskTimer(
 
     private fun startSubtaskTimer() {
         if (currentSubtaskIndex >= subtasks.size) {
-            Log.d("TaskTimer", "Все подзадачи завершены")
             showCompletionNotification()
             context.sendBroadcast(Intent("com.example.tasktimer.TASK_COMPLETED").apply {
                 putExtra("TASK_NUMBER", taskNumber)
@@ -72,7 +71,6 @@ class TaskTimer(
     }
 
     private fun showCompletionNotification() {
-        // Очистка данных прогресса
         context.getSharedPreferences("TaskProgress", Context.MODE_PRIVATE).edit().apply {
             remove("task_${taskNumber}_current")
             remove("task_${taskNumber}_remaining")
@@ -179,7 +177,6 @@ class TaskTimer(
         }
     }
 
-    // Getters для сервиса
     fun isRunning() = isRunning
     fun remainingTime() = remainingTime
     fun taskName() = taskName

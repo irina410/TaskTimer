@@ -32,16 +32,16 @@ class TaskAdapter(
     override fun getItemCount(): Int = tasks.size
 
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // Объявляем все View элементы
         private val taskNumber: TextView = itemView.findViewById(R.id.taskNumber)
         private val algorithmName: TextView = itemView.findViewById(R.id.taskName)
         private val taskTime: TextView = itemView.findViewById(R.id.taskTime)
-        private val startStopButton: FloatingActionButton = itemView.findViewById(R.id.startStopButton)
+        private val startStopButton: FloatingActionButton =
+            itemView.findViewById(R.id.startStopButton)
         private val subtaskLayout: ViewGroup = itemView.findViewById(R.id.subtaskLayout)
         private val subtaskCountdown: TextView = itemView.findViewById(R.id.subtaskCountdown)
         private val nextSubtask: TextView = itemView.findViewById(R.id.nextSubtask)
         private var isRunning = false
-        private val context: Context = itemView.context // Получаем контекст
+        private val context: Context = itemView.context
 
         private val taskCompletionReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -54,7 +54,6 @@ class TaskAdapter(
         }
 
         fun bind(task: Task, onTaskDelete: (Task) -> Unit) {
-            // Регистрируем ресивер
             val filter = IntentFilter("com.example.tasktimer.TASK_COMPLETED")
             ContextCompat.registerReceiver(
                 context,
@@ -67,7 +66,6 @@ class TaskAdapter(
             algorithmName.text = task.algorithm.name
             taskTime.text = formatTime(task.algorithm.totalTime)
 
-            // Получаем подзадачи из задачи
             val subtasks = task.algorithm.subtasks
 
             val prefs = context.getSharedPreferences("TaskProgress", Context.MODE_PRIVATE)
@@ -79,15 +77,13 @@ class TaskAdapter(
                 subtaskLayout.visibility = View.VISIBLE
                 val remaining = prefs.getLong("task_${task.number}_remaining", 0) / 1000
                 val pr = if (subtasks[currentIndex].isHighPriority) "высокий приоритет" else ""
-                subtaskCountdown.text = "${subtasks[currentIndex].description} : ${formatTime(remaining)}  $pr"
+                subtaskCountdown.text =
+                    "${subtasks[currentIndex].description} : ${formatTime(remaining)}  $pr"
 
-                // Формируем строку для следующей подзадачи
                 val nextSubtaskText = buildString {
                     val nextIndex = currentIndex + 1
 
-                    // Проверяем существование следующей подзадачи
                     if (nextIndex < subtasks.size) {
-                        // Берем данные из SharedPreferences или из списка подзадач
                         val nextDesc = prefs.getString("task_${task.number}_next_desc", null)
                             ?: subtasks[nextIndex].description
 

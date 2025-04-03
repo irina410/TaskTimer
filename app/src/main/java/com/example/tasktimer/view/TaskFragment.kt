@@ -25,7 +25,7 @@ import com.google.gson.reflect.TypeToken
 class TaskFragment : Fragment() {
     private val tasks = mutableListOf<Task>()
     private lateinit var taskAdapter: TaskAdapter
-    private lateinit var prefs: SharedPreferences // Добавляем переменную
+    private lateinit var prefs: SharedPreferences
     private val algorithmUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == "ALGORITHM_UPDATED") {
@@ -36,7 +36,7 @@ class TaskFragment : Fragment() {
     }
     override fun onStart() {
         super.onStart()
-        // Регистрируем ресивер для обновлений алгоритмов
+
         val filter = IntentFilter("ALGORITHM_UPDATED")
         ContextCompat.registerReceiver(
             requireContext(),
@@ -52,7 +52,7 @@ class TaskFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Инициализируем prefs
+
         prefs = requireContext().getSharedPreferences("TaskProgress", Context.MODE_PRIVATE)
 
         val view = inflater.inflate(R.layout.fragment_task, container, false)
@@ -83,17 +83,17 @@ class TaskFragment : Fragment() {
     }
 
     override fun onResume() {
-        super.onResume() // Добавляем вызов super
+        super.onResume()
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
     }
 
     override fun onPause() {
-        super.onPause() // Добавляем вызов super
+        super.onPause()
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
     }
     override fun onStop() {
         super.onStop()
-        // Отменяем регистрацию ресивера
+
         requireContext().unregisterReceiver(algorithmUpdateReceiver)
 
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
@@ -105,10 +105,10 @@ class TaskFragment : Fragment() {
         val updatedAlgorithm = repository.loadAlgorithms().find { it.name == algorithmName }
 
         updatedAlgorithm?.let { algo ->
-            // Обновляем все задачи с этим алгоритмом
+
             tasks.forEach { task ->
                 if (task.algorithm.name == algorithmName) {
-                    task.algorithm = algo.copy() // Используем копию чтобы не нарушить ссылки
+                    task.algorithm = algo.copy()
                 }
             }
 

@@ -45,19 +45,16 @@ class AlgorithmEditDialogFragment(
     ): View {
         val view = inflater.inflate(R.layout.fragment_algorithm_edit_dialog, container, false)
 
-        // Инициализация элементов интерфейса
         nameEditText = view.findViewById(R.id.editAlgorithmName)
         totalTimeTextView = view.findViewById(R.id.totalTime)
         subtasksRecyclerView = view.findViewById(R.id.subtasksRecyclerView)
         emptyTextView = view.findViewById(R.id.emptySubtasksText)
 
-        // Если передан существующий алгоритм, заполняем его данные в поля
         algorithm?.let {
             nameEditText.setText(it.name)
             subtasks.addAll(it.subtasks)
         }
 
-        // Настройка RecyclerView для отображения списка подзадач
         subtasksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         subtasksRecyclerView.adapter = SubtaskAdapter(
             subtasks,
@@ -69,18 +66,15 @@ class AlgorithmEditDialogFragment(
 
         updateSubtasks()
 
-        // Обработчик для добавления новой подзадачи
         view.findViewById<View>(R.id.addSubtaskFab).setOnClickListener {
             subtasks.add(Subtask("", 0))
             updateSubtasks()
         }
 
-        // Обработчик для закрытия диалога
         view.findViewById<View>(R.id.closeButton).setOnClickListener {
             dismiss()
         }
 
-        // Обработчик для сохранения алгоритма
         view.findViewById<View>(R.id.saveButton).setOnClickListener {
             val nameText = nameEditText.text.toString().trim()
             if (nameText.isEmpty()) {
@@ -89,17 +83,14 @@ class AlgorithmEditDialogFragment(
                 return@setOnClickListener
             }
 
-            // Создаем обновленный алгоритм на основе данных из интерфейса
             val updatedAlgorithm = Algorithm(
                 name = nameText,
                 subtasks = subtasks.toList()
             ).apply { recalculateTotalTime() }
 
-            // Если алгоритм редактируется, удаляем старую версию
             algorithm?.let { onDelete(it) }
-            // Отправляем броадкаст для обновления списка задач
             val intent = Intent("ALGORITHM_UPDATED").apply {
-                putExtra("algorithm_id", updatedAlgorithm.name) // Передаём ID, если нужно
+                putExtra("algorithm_id", updatedAlgorithm.name)
             }
             requireContext().sendBroadcast(intent)
             onSave(updatedAlgorithm)
@@ -107,7 +98,6 @@ class AlgorithmEditDialogFragment(
             dismiss()
         }
 
-        // Обработчик для удаления алгоритма
         view.findViewById<View>(R.id.deleteButton).setOnClickListener {
             algorithm?.let {
                 onDelete(it)
@@ -120,7 +110,6 @@ class AlgorithmEditDialogFragment(
 
     override fun onPause() {
         super.onPause()
-        // Скрываем клавиатуру при сворачивании диалога
         val imm = requireContext().getSystemService(InputMethodManager::class.java)
         val view = requireActivity().currentFocus
         if (view != null) {
@@ -129,10 +118,6 @@ class AlgorithmEditDialogFragment(
         }
     }
 
-    /**
-     * Обновление отображения списка подзадач.
-     * Если список пуст, показываем сообщение "Нет подзадач".
-     */
     private fun updateSubtasks() {
         if (subtasks.isEmpty()) {
             emptyTextView.visibility = View.VISIBLE
@@ -145,29 +130,18 @@ class AlgorithmEditDialogFragment(
         updateTotalTime()
     }
 
-    /**
-     * Вызывается при обновлении одной из подзадач.
-     * Пересчитывает общее время выполнения алгоритма.
-     */
+
     private fun onSubtaskUpdated() {
         updateTotalTime()
     }
 
-    /**
-     * Обновление общего времени выполнения алгоритма.
-     * Вычисляет сумму времени всех подзадач и отображает в интерфейсе.
-     */
+
     private fun updateTotalTime() {
         val totalSeconds = subtasks.sumOf { it.duration }
         totalTimeTextView.text = formatTime(totalSeconds)
     }
 
-    /**
-     * Форматирование времени в виде HH:MM:SS.
-     *
-     * @param totalSeconds Общее количество секунд.
-     * @return Отформатированная строка.
-     */
+
     private fun formatTime(totalSeconds: Long): String {
         val hours = totalSeconds / 3600
         val minutes = (totalSeconds % 3600) / 60

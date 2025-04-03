@@ -3,12 +3,11 @@ package com.example.tasktimer.model
 import android.os.Parcel
 import android.os.Parcelable
 
-// Класс данных для подзадачи
 data class Subtask(
     var description: String,
-    var duration: Long, // Продолжительность в секундах
-    var isHighPriority: Boolean = false,  // Флаг высокой приоритетности задачи
-): Parcelable {
+    var duration: Long,
+    var isHighPriority: Boolean = false,
+) : Parcelable {
     constructor(parcel: Parcel) : this(
         description = parcel.readString() ?: "",
         duration = parcel.readLong(),
