@@ -27,7 +27,6 @@ class TaskTimer(
     private var currentTimer: CountDownTimer? = null
     private var remainingTime: Long = 0
     private var isRunning = false
-
     fun start() {
         startSubtaskTimer()
     }
@@ -115,7 +114,11 @@ class TaskTimer(
     private fun triggerAlarm(currentSubtask: Subtask) {
         context.getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE).edit().apply {
             val nextIndex = currentSubtaskIndex + 1
+            val totalDuration = subtasks.sumOf { it.duration }
+
             putString("TASK_NAME", taskName)
+            putInt("TASK_NUMBER", taskNumber )
+            putString("TOTAL_TIME", formatTime(totalDuration *1000L))
             putString("COMPLETED_SUBTASK", currentSubtask.description)
             putString("COMPLETED_TIME", formatTime(currentSubtask.duration * 1000L))
             putString("NEXT_SUBTASK", subtasks.getOrNull(nextIndex)?.description ?: "Все подзадачи выполнены!")

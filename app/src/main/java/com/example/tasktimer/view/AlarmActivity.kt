@@ -46,7 +46,7 @@ class AlarmActivity : AppCompatActivity() {
         val priority = sharedPrefs.getBoolean("PRIORITY", false)
 
 
-        findViewById<TextView>(R.id.task_title).text = "$taskNumber $taskName ($totalTime)"
+        findViewById<TextView>(R.id.task_title).setText("$taskNumber $taskName ($totalTime)")
 
 
         val completedTextView = findViewById<TextView>(R.id.completed_subtask)
