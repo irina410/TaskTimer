@@ -1,102 +1,102 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".view.AlgorithmCreateDialogFragment">
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/scrollContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
-        <!-- Поле для ввода названия алгоритма -->
-        <EditText
-            android:id="@+id/editAlgorithmName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Название алгоритма"
-            android:inputType="text"
-            android:minHeight="48dp" />
+        android:padding="16dp"
+        android:layout_above="@+id/addSubtaskFab">
 
-        <!-- Общее время -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/primary_text"
-            android:text="Общее время:"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/totalTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity=""
-            android:textColor="@color/primary_text"
-            android:text="00:00:00" />
-
-        <!-- Линия-разделитель -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginVertical="8dp"
-            android:background="@color/primary" />
-
-        <!-- Список подзадач -->
-        <TextView
-            android:id="@+id/emptySubtasksText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="@color/primary_text"
-            android:text="Список пуст"
-            android:visibility="visible" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/subtasksRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-        <!-- Кнопка для добавления подзадачи -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addSubtaskFab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/primary"
-            android:layout_gravity="end"
-            android:layout_marginTop="16dp"
-            android:contentDescription="Добавить подзадачу"
-            android:src="@android:drawable/ic_input_add" />
-
-        <!-- Кнопки сохранения и отмены -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/cancelButton"
-                android:layout_width="0dp"
+            <EditText
+                android:id="@+id/editAlgorithmName"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp"
-                android:backgroundTint="@color/primary"
-                android:textColor="@color/primary_text"
-                android:layout_weight="1"
-                android:text="Отмена" />
+                android:hint="Название алгоритма"
+                android:inputType="text"
+                android:minHeight="48dp" />
 
-            <Button
-                android:id="@+id/saveButton"
-                android:layout_width="0dp"
-                android:textColor="@color/primary_text"
-                android:backgroundTint="@color/primary"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp"
-                android:layout_weight="1"
-                android:text="Сохранить" />
+                android:layout_marginTop="8dp"
+                android:textColor="@color/primary_text"
+                android:text="Общее время:"
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/totalTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary_text"
+                android:text="00:00:00" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="8dp"
+                android:background="@color/primary" />
+
+            <TextView
+                android:id="@+id/emptySubtasksText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/primary_text"
+                android:text="Список пуст"
+                android:visibility="visible" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/subtasksRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/cancelButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="8dp"
+                    android:backgroundTint="@color/primary"
+                    android:textColor="@color/primary_text"
+                    android:layout_weight="1"
+                    android:text="Отмена" />
+
+                <Button
+                    android:id="@+id/saveButton"
+                    android:layout_width="0dp"
+                    android:textColor="@color/primary_text"
+                    android:backgroundTint="@color/primary"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight="1"
+                    android:text="Сохранить" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addSubtaskFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/primary"
+        android:contentDescription="Добавить подзадачу"
+        android:src="@android:drawable/ic_input_add" />
 </RelativeLayout>
