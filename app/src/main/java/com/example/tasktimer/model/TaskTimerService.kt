@@ -45,7 +45,7 @@ class TaskTimerService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
         } else {
-            registerReceiver(notificationReceiver, filter)
+            registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
         }
     }
 
@@ -80,7 +80,7 @@ class TaskTimerService : Service() {
         )
 
         activeTimers[taskName] = taskTimer
-        taskTimer.start()
+        taskTimer.resume()
         startForeground(NOTIFICATION_ID, createSilentNotification())
     }
 
@@ -91,14 +91,14 @@ class TaskTimerService : Service() {
         activeTimers[taskName]?.stop()
         activeTimers.remove(taskName)
 
-        if (taskNumber != -1) {
-            getSharedPreferences("TaskProgress", Context.MODE_PRIVATE).edit().apply {
-                remove("task_${taskNumber}_current")
-                remove("task_${taskNumber}_remaining")
-                remove("task_${taskNumber}_next_desc")
-                apply()
-            }
-        }
+//        if (taskNumber != -1) {
+//            getSharedPreferences("TaskProgress", Context.MODE_PRIVATE).edit().apply {
+//                remove("task_${taskNumber}_current")
+//                remove("task_${taskNumber}_remaining")
+//                remove("task_${taskNumber}_next_desc")
+//                apply()
+//            }
+//        }
 
         stopSelfIfNoTasks()
     }
@@ -112,12 +112,14 @@ class TaskTimerService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.deleteNotificationChannel(CHANNEL_ID)
+
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Task Timer Notifications",
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
-                enableLights(true)
+                enableLights(false)
                 lightColor = Color.BLUE
                 enableVibration(true)
                 description = "Уведомления таймера задач"
@@ -125,6 +127,7 @@ class TaskTimerService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
 
     private fun createSilentNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -145,7 +148,7 @@ class TaskTimerService : Service() {
                 nextTask.formatTime(nextTask.remainingTime()),
                 nextTask.currentSubtaskName()
             )
-            startForeground(NOTIFICATION_ID, notification)
+            //startForeground(NOTIFICATION_ID, notification)
         }
     }
 

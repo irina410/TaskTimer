@@ -35,8 +35,10 @@ class TaskTimer(
         stopCurrentTimer()
         notificationManager.cancel(taskName.hashCode())
     }
-
-    private fun startSubtaskTimer() {
+    private fun cancelNotification() {
+        notificationManager.cancel(taskName.hashCode())
+    }
+    private fun startSubtaskTimer(restore: Boolean = false) {
         if (currentSubtaskIndex >= subtasks.size) {
             showCompletionNotification()
             context.sendBroadcast(Intent("com.example.tasktimer.TASK_COMPLETED").apply {
@@ -44,14 +46,20 @@ class TaskTimer(
             })
             return
         }
+
         isRunning = true
-
+        saveProgress()
+        cancelNotification()
         val currentSubtask = subtasks[currentSubtaskIndex]
-        remainingTime = currentSubtask.duration * 1000L
 
-        stopCurrentTimer()
+        // Только если не восстанавливаем — ставим полное время
+        if (!restore) {
+            remainingTime = currentSubtask.duration * 1000L
+        }
 
-        updateNotification(formatTime(remainingTime), currentSubtask.description)
+        //stop()
+
+       // updateNotification(formatTime(remainingTime), currentSubtask.description)
 
         currentTimer = object : CountDownTimer(remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -62,11 +70,27 @@ class TaskTimer(
             }
 
             override fun onFinish() {
+                remainingTime = 0L
+                saveProgress()
                 triggerAlarm(currentSubtask)
                 waitForUserConfirmation()
                 context.sendBroadcast(Intent("com.example.tasktimer.UPDATE_NOTIFICATION"))
             }
         }.start()
+    }
+
+    fun resume() {
+        val prefs = context.getSharedPreferences("TaskProgress", Context.MODE_PRIVATE)
+        currentSubtaskIndex = prefs.getInt("task_${taskNumber}_current", 0)
+        remainingTime = prefs.getLong("task_${taskNumber}_remaining", 0L)
+
+        if (remainingTime > 0L) {
+            // Продолжим с оставшегося времени
+            startSubtaskTimer(restore = true)
+        } else {
+            // Либо это новая подзадача, либо время не сохранилось — начнём заново
+            startSubtaskTimer()
+        }
     }
 
     private fun showCompletionNotification() {
@@ -117,11 +141,14 @@ class TaskTimer(
             val totalDuration = subtasks.sumOf { it.duration }
 
             putString("TASK_NAME", taskName)
-            putInt("TASK_NUMBER", taskNumber )
-            putString("TOTAL_TIME", formatTime(totalDuration *1000L))
+            putInt("TASK_NUMBER", taskNumber)
+            putString("TOTAL_TIME", formatTime(totalDuration * 1000L))
             putString("COMPLETED_SUBTASK", currentSubtask.description)
             putString("COMPLETED_TIME", formatTime(currentSubtask.duration * 1000L))
-            putString("NEXT_SUBTASK", subtasks.getOrNull(nextIndex)?.description ?: "Все подзадачи выполнены!")
+            putString(
+                "NEXT_SUBTASK",
+                subtasks.getOrNull(nextIndex)?.description ?: "Все подзадачи выполнены!"
+            )
             putBoolean("PRIORITY", currentSubtask.isHighPriority)
             putBoolean("NEXT_PR", subtasks.getOrNull(nextIndex)?.isHighPriority ?: false)
             putLong("NEXT_TIME", subtasks.getOrNull(nextIndex)?.duration ?: 0)
@@ -139,6 +166,7 @@ class TaskTimer(
     private fun stopCurrentTimer() {
         currentTimer?.cancel()
         isRunning = false
+        saveProgress()
     }
 
     private fun updateNotification(time: String, subtaskName: String) {
@@ -176,6 +204,8 @@ class TaskTimer(
             putInt("task_${taskNumber}_current", currentSubtaskIndex)
             putLong("task_${taskNumber}_remaining", remainingTime)
             putString("task_${taskNumber}_next_desc", subtasks.getOrNull(nextIndex)?.description)
+            putBoolean("task_${taskNumber}_running", isRunning).apply()
+
             apply()
         }
     }

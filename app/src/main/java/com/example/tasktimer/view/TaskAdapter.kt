@@ -70,9 +70,10 @@ class TaskAdapter(
 
             val prefs = context.getSharedPreferences("TaskProgress", Context.MODE_PRIVATE)
             val currentIndex = prefs.getInt("task_${task.number}_current", -1)
-
+            val isRunningSaved = prefs.getBoolean("task_${task.number}_running", false)
+            isRunning = isRunningSaved
             if (currentIndex != -1 && currentIndex < subtasks.size) {
-                isRunning = true
+
                 updateButtonIcon()
                 subtaskLayout.visibility = View.VISIBLE
                 val remaining = prefs.getLong("task_${task.number}_remaining", 0) / 1000
@@ -133,13 +134,15 @@ class TaskAdapter(
                 putExtra(TaskTimerService.EXTRA_TASK_NAME, task.algorithm.name)
                 context.startService(this)
             }
+            isRunning = false
 
-            context.getSharedPreferences("TaskProgress", Context.MODE_PRIVATE).edit().apply {
-                remove("task_${task.number}_current")
-                remove("task_${task.number}_remaining")
-                remove("task_${task.number}_next_desc")
-                apply()
-            }
+
+//            context.getSharedPreferences("TaskProgress", Context.MODE_PRIVATE).edit().apply {
+//                remove("task_${task.number}_current")
+//                remove("task_${task.number}_remaining")
+//                remove("task_${task.number}_next_desc")
+//                apply()
+//            }
         }
 
         private fun updateButtonIcon() {
