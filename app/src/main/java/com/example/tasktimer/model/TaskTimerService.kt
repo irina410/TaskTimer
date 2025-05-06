@@ -45,7 +45,7 @@ class TaskTimerService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
         } else {
-            registerReceiver(notificationReceiver, filter, RECEIVER_EXPORTED)
+            registerReceiver(notificationReceiver, filter)
         }
     }
 
