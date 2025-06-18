@@ -20,9 +20,9 @@ TaskTimer — это Android-приложение, которое позволя
 
 ## 🖼️ Интерфейс
 
-| Создание алгоритма | Подзадачи алгоритма | Задачи | Запущенная задача |
+| Создание алгоритма | Создание задачи | Экран задач | Запущенная задача |
 |--------------------|----------------------|--------|--------------------|
-| ![alg1](screenshots/alg_create.png) | ![alg2](screenshots/alg_subtasks.png) | ![task](screenshots/task_list.png) | ![running](screenshots/task_running.png) |
+| ![alg1](screenshots/alg_create.png) | ![alg2](screenshots/task_create.png) | ![task](screenshots/task_list.png) | ![running](screenshots/task_running.png) |
 
 
 
